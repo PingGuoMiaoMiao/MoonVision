@@ -111,3 +111,8 @@ pub fn RgbImage::copy(self : RgbImage) -> RgbImage {
   }
   { width: self.width, height: self.height, data: copied }
 }
+
+///|
+pub fn RgbImage::to_array(self : RgbImage) -> Array[Byte] {
+  Array::makei(self.data.length(), fn(i) { self.data[i] })
+}
