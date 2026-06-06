@@ -58,3 +58,29 @@ test "gaussian blur and sharpen behave on simple inputs" {
     ),
   )
 }
+
+///|
+test "median blur removes isolated salt noise" {
+  let noisy = try! @image.gray_from_array(
+    3,
+    3,
+    [
+      b'\x32',
+      b'\x32',
+      b'\x32',
+      b'\x32',
+      b'\xff',
+      b'\x32',
+      b'\x32',
+      b'\x32',
+      b'\x32',
+    ],
+  )
+  let out = try! median_blur(noisy, radius=1)
+  inspect(
+    out.to_array(),
+    content=(
+      "[b'\\x32', b'\\x32', b'\\x32', b'\\x32', b'\\x32', b'\\x32', b'\\x32', b'\\x32', b'\\x32']"
+    ),
+  )
+}
