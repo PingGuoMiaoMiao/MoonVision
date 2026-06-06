@@ -24,6 +24,17 @@ fn pixel_count_or_panic(width : Int, height : Int) -> Int {
   width * height
 }
 
+///|
+pub fn clamp_byte(value : Int) -> Byte {
+  if value < 0 {
+    b'\x00'
+  } else if value > 255 {
+    b'\xff'
+  } else {
+    value.to_byte()
+  }
+}
+
 fn GrayImage::index_of(self : GrayImage, x : Int, y : Int) -> Int raise ImageError {
   if x < 0 || y < 0 || x >= self.width || y >= self.height {
     raise OutOfBounds(x, y)

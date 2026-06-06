@@ -1,11 +1,5 @@
 fn clamp_int_to_byte(value : Int) -> Byte {
-  if value < 0 {
-    b'\x00'
-  } else if value > 255 {
-    b'\xff'
-  } else {
-    value.to_byte()
-  }
+  @image.clamp_byte(value)
 }
 
 ///|
