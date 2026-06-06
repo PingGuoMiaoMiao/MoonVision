@@ -2,4 +2,5 @@ _build/
 .mooncakes/
 target/
 examples/output/
+!examples/output/.gitkeep
 .vscode/

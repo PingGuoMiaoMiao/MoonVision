@@ -1,0 +1,16 @@
+{
+  "import": [
+    {
+      "path": "PingGuoMiaoMiao/MoonVision/components",
+      "alias": "components"
+    },
+    {
+      "path": "PingGuoMiaoMiao/MoonVision/image",
+      "alias": "image"
+    },
+    {
+      "path": "PingGuoMiaoMiao/MoonVision/vendor/imagecodec",
+      "alias": "codec"
+    }
+  ]
+}

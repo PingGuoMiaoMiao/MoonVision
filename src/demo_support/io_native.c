@@ -1,0 +1,45 @@
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#include <errno.h>
+#include <stdio.h>
+#include <string.h>
+
+#include "moonbit.h"
+
+MOONBIT_FFI_EXPORT FILE *moonvision_demo_io_fopen_ffi(moonbit_bytes_t path,
+                                                      moonbit_bytes_t mode) {
+  return fopen((const char *)path, (const char *)mode);
+}
+
+MOONBIT_FFI_EXPORT int moonvision_demo_io_is_null(void *ptr) {
+  return ptr == NULL;
+}
+
+MOONBIT_FFI_EXPORT size_t moonvision_demo_io_fwrite_ffi(moonbit_bytes_t ptr,
+                                                        int size,
+                                                        int nitems,
+                                                        FILE *stream) {
+  return fwrite(ptr, size, nitems, stream);
+}
+
+MOONBIT_FFI_EXPORT int moonvision_demo_io_fflush_ffi(FILE *file) {
+  return fflush(file);
+}
+
+MOONBIT_FFI_EXPORT int moonvision_demo_io_fclose_ffi(FILE *stream) {
+  return fclose(stream);
+}
+
+MOONBIT_FFI_EXPORT moonbit_bytes_t moonvision_demo_io_get_error_message(void) {
+  const char *err_str = strerror(errno);
+  size_t len = strlen(err_str);
+  moonbit_bytes_t bytes = moonbit_make_bytes(len, 0);
+  memcpy(bytes, err_str, len);
+  return bytes;
+}
+
+#ifdef __cplusplus
+}
+#endif
