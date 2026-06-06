@@ -1,0 +1,8 @@
+{
+  "import": [
+    {
+      "path": "PingGuoMiaoMiao/MoonVision/image",
+      "alias": "image"
+    }
+  ]
+}
