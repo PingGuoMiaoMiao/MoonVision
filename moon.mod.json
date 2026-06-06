@@ -1,0 +1,15 @@
+{
+  "name": "PingGuoMiaoMiao/MoonVision",
+  "version": "0.1.0",
+  "readme": "README.md",
+  "repository": "https://github.com/PingGuoMiaoMiao/MoonVision",
+  "license": "MIT",
+  "keywords": [
+    "moonbit",
+    "image-processing",
+    "computer-vision"
+  ],
+  "description": "MoonBit-native lightweight image processing and basic computer vision algorithms.",
+  "source": "src",
+  "preferred-target": "native"
+}
