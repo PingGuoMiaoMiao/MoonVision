@@ -11,12 +11,27 @@ extern "C" fn is_null(ptr : Handler) -> Int = "moonvision_demo_io_is_null"
 
 ///|
 #borrow(ptr)
+extern "C" fn fread_ffi(
+  ptr : Bytes,
+  size : Int,
+  nitems : Int,
+  stream : Handler,
+) -> Int = "moonvision_demo_io_fread_ffi"
+
+///|
+#borrow(ptr)
 extern "C" fn fwrite_ffi(
   ptr : Bytes,
   size : Int,
   nitems : Int,
   stream : Handler,
 ) -> Int = "moonvision_demo_io_fwrite_ffi"
+
+///|
+extern "C" fn fseek_ffi(file : Handler, offset : Int, whence : Int) -> Int = "moonvision_demo_io_fseek_ffi"
+
+///|
+extern "C" fn ftell_ffi(file : Handler) -> Int = "moonvision_demo_io_ftell_ffi"
 
 ///|
 extern "C" fn fflush_ffi(stream : Handler) -> Int = "moonvision_demo_io_fflush_ffi"
@@ -29,6 +44,20 @@ extern "C" fn get_error_message_ffi() -> Bytes = "moonvision_demo_io_get_error_m
 
 fn get_error_message() -> String {
   utf8_bytes_to_mbt_string(get_error_message_ffi())
+}
+
+fn read_bytes_from_file_internal(path : String) -> Bytes raise IOError {
+  let file = fopen_ffi(mbt_string_to_utf8_bytes(path, true), b"rb\x00")
+  guard is_null(file) == 0 else { raise IOError(get_error_message()) }
+  guard fseek_ffi(file, 0, 2) == 0 else { raise IOError(get_error_message()) }
+  let size = ftell_ffi(file)
+  guard size != -1 else { raise IOError(get_error_message()) }
+  guard fseek_ffi(file, 0, 0) == 0 else { raise IOError(get_error_message()) }
+  let bytes = Bytes::make(size, 0)
+  let bytes_read = fread_ffi(bytes, 1, size, file)
+  guard bytes_read == size else { raise IOError(get_error_message()) }
+  guard fclose_ffi(file) == 0 else { raise IOError(get_error_message()) }
+  bytes
 }
 
 fn write_bytes_to_file_internal(

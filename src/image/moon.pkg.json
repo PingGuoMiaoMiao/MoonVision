@@ -1,1 +1,14 @@
-{}
+{
+  "import": [
+    {
+      "path": "PingGuoMiaoMiao/MoonVision/vendor/imagecodec",
+      "alias": "codec"
+    }
+  ],
+  "test-import": [
+    {
+      "path": "PingGuoMiaoMiao/MoonVision/vendor/zlib",
+      "alias": "zlib"
+    }
+  ]
+}

@@ -17,11 +17,26 @@ MOONBIT_FFI_EXPORT int moonvision_demo_io_is_null(void *ptr) {
   return ptr == NULL;
 }
 
+MOONBIT_FFI_EXPORT size_t moonvision_demo_io_fread_ffi(moonbit_bytes_t ptr,
+                                                       int size, int nitems,
+                                                       FILE *stream) {
+  return fread(ptr, size, nitems, stream);
+}
+
 MOONBIT_FFI_EXPORT size_t moonvision_demo_io_fwrite_ffi(moonbit_bytes_t ptr,
                                                         int size,
                                                         int nitems,
                                                         FILE *stream) {
   return fwrite(ptr, size, nitems, stream);
+}
+
+MOONBIT_FFI_EXPORT int moonvision_demo_io_fseek_ffi(FILE *stream, long offset,
+                                                    int whence) {
+  return fseek(stream, offset, whence);
+}
+
+MOONBIT_FFI_EXPORT long moonvision_demo_io_ftell_ffi(FILE *stream) {
+  return ftell(stream);
 }
 
 MOONBIT_FFI_EXPORT int moonvision_demo_io_fflush_ffi(FILE *file) {

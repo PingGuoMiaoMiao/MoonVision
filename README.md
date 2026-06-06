@@ -5,6 +5,7 @@ MoonVision is a MoonBit-native lightweight image processing and basic computer v
 The current `v1.0` line focuses on:
 
 - flat image containers: `GrayImage`, `RgbImage`
+- PNG decode to `RgbImage` through a vendored adapter layer
 - basic pixel operations: grayscale, threshold, invert, brightness, contrast
 - convolution filters: box blur, gaussian blur, sharpen
 - edge detection: Sobel X/Y, gradient magnitude, binary edge extraction
@@ -74,7 +75,16 @@ let overlay = @export.svg_bounding_boxes(
 ignore(overlay)
 ```
 
+Decode a PNG file into `RgbImage` bytes first:
+
+```moonbit
+let input = try! @image.rgb_from_png_bytes(png_bytes)
+ignore(input)
+```
+
 ## Demos
+
+Demo input assets live in `examples/assets/`.
 
 All demo outputs are written to `examples/output/`.
 
@@ -120,6 +130,7 @@ Outputs:
 Current tests cover:
 
 - image container invariants
+- PNG decode adaptation to `RgbImage`
 - grayscale and pixel-level ops
 - filtering and border handling
 - Sobel gradient behavior
@@ -131,4 +142,4 @@ Current tests cover:
 ## Notes
 
 - The project intentionally focuses on the algorithm layer. It does not provide GUI features, video processing, OpenCV bindings, or machine learning integration.
-- PNG export is implemented locally from a vendored subset adapted from `mizchi/image` and `mizchi/zlib`, because the current upstream registry dependency graph is not compatible with the local MoonBit toolchain used for this repository.
+- PNG decode and export are implemented locally from vendored subsets adapted from `mizchi/image` and `mizchi/zlib`, because the current upstream registry dependency graph is not compatible with the local MoonBit toolchain used for this repository.

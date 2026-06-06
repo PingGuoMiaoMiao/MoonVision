@@ -12,6 +12,11 @@ pub fn write_bytes_to_file(
 }
 
 ///|
+pub fn read_bytes_from_file(path : String) -> Bytes raise IOError {
+  read_bytes_from_file_internal(path)
+}
+
+///|
 pub fn write_string_to_file(
   path : String,
   content : String,
