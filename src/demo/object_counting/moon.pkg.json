@@ -1,0 +1,25 @@
+{
+  "is-main": true,
+  "import": [
+    {
+      "path": "PingGuoMiaoMiao/MoonVision/components",
+      "alias": "components"
+    },
+    {
+      "path": "PingGuoMiaoMiao/MoonVision/demo_support",
+      "alias": "demoio"
+    },
+    {
+      "path": "PingGuoMiaoMiao/MoonVision/export",
+      "alias": "export"
+    },
+    {
+      "path": "PingGuoMiaoMiao/MoonVision/image",
+      "alias": "image"
+    },
+    {
+      "path": "PingGuoMiaoMiao/MoonVision/ops",
+      "alias": "ops"
+    }
+  ]
+}
