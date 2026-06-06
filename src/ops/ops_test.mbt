@@ -17,6 +17,41 @@ test "threshold creates binary image" {
 }
 
 ///|
+test "otsu threshold splits bimodal grayscale image" {
+  let img = try! @image.gray_from_array(
+    6,
+    1,
+    [b'\x0a', b'\x0b', b'\x0c', b'\xc8', b'\xc9', b'\xca'],
+  )
+  let out = try! otsu_threshold(img)
+  inspect(out.to_array(), content="[b'\\x00', b'\\x00', b'\\x00', b'\\xFF', b'\\xFF', b'\\xFF']")
+}
+
+///|
+test "adaptive threshold handles local shading around dark pixels" {
+  let img = try! @image.gray_from_array(
+    3,
+    3,
+    [
+      b'\x64',
+      b'\x78',
+      b'\x8c',
+      b'\x64',
+      b'\x3c',
+      b'\x8c',
+      b'\x64',
+      b'\x78',
+      b'\x8c',
+    ],
+  )
+  let out = try! adaptive_threshold_mean(img, 3, 20)
+  inspect(
+    out.to_array(),
+    content="[b'\\xFF', b'\\xFF', b'\\xFF', b'\\xFF', b'\\x00', b'\\xFF', b'\\xFF', b'\\xFF', b'\\xFF']",
+  )
+}
+
+///|
 test "invert and brightness are composable" {
   let img = try! @image.gray_from_array(3, 1, [b'\x00', b'\x40', b'\xff'])
   let inverted = try! invert(img)

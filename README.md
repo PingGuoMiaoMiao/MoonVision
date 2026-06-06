@@ -2,12 +2,13 @@
 
 MoonVision is a MoonBit-native lightweight image processing and basic computer vision library.
 
-The current `v1.0` line focuses on:
+The current `v1.1` line focuses on:
 
 - flat image containers: `GrayImage`, `RgbImage`
 - PNG decode to `RgbImage` through a vendored adapter layer
-- basic pixel operations: grayscale, threshold, invert, brightness, contrast
-- convolution filters: box blur, gaussian blur, sharpen
+- basic pixel operations: grayscale, threshold, Otsu threshold, adaptive threshold, invert, brightness, contrast
+- convolution and neighborhood filters: box blur, gaussian blur, sharpen, median blur
+- gray-image geometric transforms: nearest-neighbor resize, horizontal flip, vertical flip, 90-degree rotation
 - edge detection: Sobel X/Y, gradient magnitude, binary edge extraction
 - binary morphology: erosion, dilation, opening, closing
 - connected components with bounding boxes and minimum-area filtering
@@ -17,9 +18,9 @@ The current `v1.0` line focuses on:
 
 ```text
 src/
-  image/           GrayImage, RgbImage, pixel access
-  ops/             grayscale, threshold, invert, brightness, contrast
-  filter/          convolution, box blur, gaussian blur, sharpen
+  image/           GrayImage, RgbImage, pixel access, gray transforms
+  ops/             grayscale, threshold, otsu, adaptive threshold, brightness, contrast
+  filter/          convolution, box blur, gaussian blur, sharpen, median blur
   edge/            sobel and gradient magnitude
   morphology/      binary morphology operators
   components/      connected components and bounding boxes
@@ -39,20 +40,28 @@ moon check
 Run tests:
 
 ```powershell
-moon test --target js
+moon test
 ```
 
-At the time of writing, the repository test suite is verified with the JS target.
+At the time of writing, the repository test suite passes on the repository default target.
 
 ## Basic Usage
 
 ```moonbit
 let rgb = try! @image.rgb(4, 4)
 let gray = try! @ops.grayscale(rgb)
-let binary = try! @ops.threshold(gray, 128)
+let binary = try! @ops.otsu_threshold(gray)
+let adaptive = try! @ops.adaptive_threshold_mean(gray, 5, 7)
+let denoised = try! @filter.median_blur(gray, radius=1)
 let blurred = try! @filter.gaussian_blur(gray, radius=1)
+let resized = try! @image.resize_nearest(gray, 8, 8)
+let rotated = try! @image.rotate90_cw(gray)
 let edges = try! @edge.gradient_magnitude(blurred)
 let blobs = try! @components.connected_components(binary, min_area=4)
+ignore(adaptive)
+ignore(denoised)
+ignore(resized)
+ignore(rotated)
 ignore(edges)
 ignore(blobs)
 ```
@@ -91,12 +100,13 @@ All demo outputs are written to `examples/output/`.
 Object counting:
 
 ```powershell
-moon run --target js src/demo/object_counting
+moon run src/demo/object_counting
 ```
 
 Outputs:
 
 - `examples/output/object_counting_input.png`
+- `examples/output/object_counting_binary_v1_0.png`
 - `examples/output/object_counting_binary.png`
 - `examples/output/object_counting_overlay.svg`
 - `examples/output/object_counting_report.html`
@@ -104,7 +114,7 @@ Outputs:
 Edge detection:
 
 ```powershell
-moon run --target js src/demo/edge_detection
+moon run src/demo/edge_detection
 ```
 
 Outputs:
@@ -116,23 +126,36 @@ Outputs:
 Document enhancement:
 
 ```powershell
-moon run --target js src/demo/document_enhancement
+moon run src/demo/document_enhancement
 ```
 
 Outputs:
 
 - `examples/output/document_enhancement_input.png`
+- `examples/output/document_enhancement_output_v1_0.png`
 - `examples/output/document_enhancement_output.png`
 - `examples/output/document_enhancement_report.html`
+
+## v1.0 vs v1.1
+
+The bundled demo assets are kept stable so `v1.0` and `v1.1` remain directly comparable.
+
+- Object counting:
+  `v1.0` used `threshold(120)` and detected `5` objects on the bundled asset.
+  `v1.1` uses `median_blur(radius=1) -> otsu_threshold` and also detects `5` objects, while removing the fixed threshold constant from the counting path.
+- Document enhancement:
+  `v1.0` used a fixed threshold after brightness and contrast adjustment.
+  `v1.1` preserves the `v1.0` output in `document_enhancement_output_v1_0.png` and writes the optimized `median_blur -> adaptive_threshold_mean` result to `document_enhancement_output.png`.
 
 ## Testing Scope
 
 Current tests cover:
 
 - image container invariants
+- gray-image geometric transforms
 - PNG decode adaptation to `RgbImage`
-- grayscale and pixel-level ops
-- filtering and border handling
+- grayscale, global thresholding, Otsu thresholding, and adaptive thresholding
+- filtering, border handling, and median blur behavior
 - Sobel gradient behavior
 - binary morphology behavior
 - connected components and area filtering

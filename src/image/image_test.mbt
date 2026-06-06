@@ -81,3 +81,49 @@ test "png decoding adapts RGBA data to rgb image" {
   inspect(img.height(), content="2")
   inspect(img.to_array(), content="[b'\\xFF', b'\\x00', b'\\x00', b'\\x00', b'\\xFF', b'\\x00', b'\\x00', b'\\x00', b'\\xFF', b'\\xFF', b'\\xFF', b'\\xFF']")
 }
+
+fn transform_fixture_gray() -> GrayImage {
+  try! gray_from_array(
+    2,
+    3,
+    [
+      b'\x01',
+      b'\x02',
+      b'\x03',
+      b'\x04',
+      b'\x05',
+      b'\x06',
+    ],
+  )
+}
+
+///|
+test "gray transforms resize flip and rotate predictably" {
+  let img = transform_fixture_gray()
+  let resized = try! resize_nearest(img, 4, 3)
+  let flipped_h = try! flip_horizontal(img)
+  let flipped_v = try! flip_vertical(img)
+  let rotated_cw = try! rotate90_cw(img)
+  let rotated_ccw = try! rotate90_ccw(img)
+
+  inspect(
+    resized.to_array(),
+    content="[b'\\x01', b'\\x01', b'\\x02', b'\\x02', b'\\x03', b'\\x03', b'\\x04', b'\\x04', b'\\x05', b'\\x05', b'\\x06', b'\\x06']",
+  )
+  inspect(
+    flipped_h.to_array(),
+    content="[b'\\x02', b'\\x01', b'\\x04', b'\\x03', b'\\x06', b'\\x05']",
+  )
+  inspect(
+    flipped_v.to_array(),
+    content="[b'\\x05', b'\\x06', b'\\x03', b'\\x04', b'\\x01', b'\\x02']",
+  )
+  inspect(
+    rotated_cw.to_array(),
+    content="[b'\\x05', b'\\x03', b'\\x01', b'\\x06', b'\\x04', b'\\x02']",
+  )
+  inspect(
+    rotated_ccw.to_array(),
+    content="[b'\\x02', b'\\x04', b'\\x06', b'\\x01', b'\\x03', b'\\x05']",
+  )
+}
