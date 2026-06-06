@@ -6,6 +6,10 @@
       "alias": "demoio"
     },
     {
+      "path": "PingGuoMiaoMiao/MoonVision/filter",
+      "alias": "filter"
+    },
+    {
       "path": "PingGuoMiaoMiao/MoonVision/export",
       "alias": "export"
     },
