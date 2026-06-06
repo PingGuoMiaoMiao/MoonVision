@@ -2,11 +2,24 @@
 extern "C" {
 #endif
 
-#include <errno.h>
-#include <stdio.h>
-#include <string.h>
-
 #include "moonbit.h"
+
+typedef unsigned long long size_t;
+typedef struct _iobuf FILE;
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+extern FILE *fopen(const char *filename, const char *mode);
+extern size_t fread(void *buffer, size_t size, size_t count, FILE *stream);
+extern size_t fwrite(const void *buffer, size_t size, size_t count, FILE *stream);
+extern int fseek(FILE *stream, long offset, int origin);
+extern long ftell(FILE *stream);
+extern int fflush(FILE *stream);
+extern int fclose(FILE *stream);
+extern void *memcpy(void *dest, const void *src, size_t count);
+extern size_t strlen(const char *str);
 
 MOONBIT_FFI_EXPORT FILE *moonvision_demo_io_fopen_ffi(moonbit_bytes_t path,
                                                       moonbit_bytes_t mode) {
@@ -48,7 +61,7 @@ MOONBIT_FFI_EXPORT int moonvision_demo_io_fclose_ffi(FILE *stream) {
 }
 
 MOONBIT_FFI_EXPORT moonbit_bytes_t moonvision_demo_io_get_error_message(void) {
-  const char *err_str = strerror(errno);
+  const char *err_str = "I/O error";
   size_t len = strlen(err_str);
   moonbit_bytes_t bytes = moonbit_make_bytes(len, 0);
   memcpy(bytes, err_str, len);
