@@ -143,7 +143,3 @@ Current tests cover:
 
 - The project intentionally focuses on the algorithm layer. It does not provide GUI features, video processing, OpenCV bindings, or machine learning integration.
 - PNG decode and export are implemented locally from vendored subsets adapted from `mizchi/image` and `mizchi/zlib`, because the current upstream registry dependency graph is not compatible with the local MoonBit toolchain used for this repository.
-
-## License
-
-MoonVision is released under the `MIT` license. See [LICENSE](/C:/Users/chen/Desktop/MoonVision/LICENSE) for the full text.
