@@ -111,6 +111,8 @@ pub fn canny_edges(
     }
   }
 
+  // Debug note: hysteresis grows only from strong edges so weak responses survive
+  // only when they are actually connected to a confident edge segment.
   while stack_xs.length() > 0 {
     let last = stack_xs.length() - 1
     let x = stack_xs[last]
