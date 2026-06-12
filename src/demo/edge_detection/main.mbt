@@ -14,6 +14,8 @@ fn main {
   let gray = try! @ops.grayscale(input)
   let blurred = try! @filter.gaussian_blur(gray, radius=1)
   let sobel_edges = try! @edge.gradient_magnitude(blurred)
+  // Debug note: keep Sobel magnitude and Canny side by side so v1.2 can be
+  // checked against the older edge output instead of replacing it silently.
   let canny = try! @edge.canny_edges(blurred, 48, 96)
 
   let input_name = "edge_detection_input.png"
