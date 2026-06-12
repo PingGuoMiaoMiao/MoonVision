@@ -58,3 +58,23 @@ test "gradient magnitude and edge extract produce edge map" {
     ),
   )
 }
+
+///|
+test "canny edges extract a thin binary edge map" {
+  let edges = try! canny_edges(vertical_step(), 64, 128)
+  inspect(
+    edges.to_array(),
+    content=(
+      "[b'\\x00', b'\\xFF', b'\\x00', b'\\x00', b'\\x00', b'\\x00', b'\\xFF', b'\\x00', b'\\x00', b'\\x00', b'\\x00', b'\\xFF', b'\\x00', b'\\x00', b'\\x00', b'\\x00', b'\\xFF', b'\\x00', b'\\x00', b'\\x00', b'\\x00', b'\\xFF', b'\\x00', b'\\x00', b'\\x00']"
+    ),
+  )
+}
+
+///|
+test "canny edges rejects inverted thresholds" {
+  let err = try? canny_edges(vertical_step(), 128, 128)
+  inspect(
+    err,
+    content="Err(InvalidDimensions(\"canny low_threshold must be less than high_threshold\"))",
+  )
+}

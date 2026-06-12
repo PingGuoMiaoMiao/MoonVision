@@ -13,30 +13,36 @@ fn main {
   let input = try! @image.rgb_from_png_bytes(try! @demoio.read_bytes_from_file(asset_path))
   let gray = try! @ops.grayscale(input)
   let blurred = try! @filter.gaussian_blur(gray, radius=1)
-  let edges = try! @edge.gradient_magnitude(blurred)
+  let sobel_edges = try! @edge.gradient_magnitude(blurred)
+  // Debug note: keep Sobel magnitude and Canny side by side so v1.2 can be
+  // checked against the older edge output instead of replacing it silently.
+  let canny = try! @edge.canny_edges(blurred, 48, 96)
 
   let input_name = "edge_detection_input.png"
   let edges_name = "edge_detection_edges.png"
+  let canny_name = "edge_detection_canny.png"
   let report_name = "edge_detection_report.html"
 
   write_rgb_png(output_dir + input_name, input)
-  write_gray_png(output_dir + edges_name, edges)
+  write_gray_png(output_dir + edges_name, sobel_edges)
+  write_gray_png(output_dir + canny_name, canny)
   try! @demoio.write_string_to_file(
     output_dir + report_name,
     @export.html_report(
       "MoonVision Edge Detection",
       [
-        "pipeline: grayscale -> gaussian blur -> sobel gradient magnitude",
+        "pipeline: grayscale -> gaussian blur -> sobel gradient magnitude + canny",
         "input asset: " + asset_path,
         "input size: " + input.width().to_string() + "x" + input.height().to_string(),
-        "output: gradient magnitude edge map",
+        "output: sobel magnitude map and canny binary edge map",
       ],
       [
         @export.report_image("input asset", input_name),
-        @export.report_image("edge magnitude", edges_name),
+        @export.report_image("sobel edge magnitude", edges_name),
+        @export.report_image("canny edge map", canny_name),
       ],
     ),
   )
 
-  println("edge detection output: " + output_dir + edges_name)
+  println("edge detection outputs: " + output_dir + edges_name + ", " + output_dir + canny_name)
 }
