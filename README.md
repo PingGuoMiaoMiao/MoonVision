@@ -2,16 +2,16 @@
 
 MoonVision is a MoonBit-native lightweight image processing and basic computer vision library.
 
-The current `v1.1` line focuses on:
+The current `v1.2` line focuses on:
 
 - flat image containers: `GrayImage`, `RgbImage`
 - PNG decode to `RgbImage` through a vendored adapter layer
 - basic pixel operations: grayscale, threshold, Otsu threshold, adaptive threshold, invert, brightness, contrast
 - convolution and neighborhood filters: box blur, gaussian blur, sharpen, median blur
 - gray-image geometric transforms: nearest-neighbor resize, horizontal flip, vertical flip, 90-degree rotation
-- edge detection: Sobel X/Y, gradient magnitude, binary edge extraction
+- edge detection: Sobel X/Y, gradient magnitude, binary edge extraction, Canny
 - binary morphology: erosion, dilation, opening, closing
-- connected components with bounding boxes and minimum-area filtering
+- connected components, contour extraction, contour statistics, and bounding boxes
 - visual export: PNG bytes, SVG overlays, HTML reports
 
 ## Module Layout
@@ -21,9 +21,9 @@ src/
   image/           GrayImage, RgbImage, pixel access, gray transforms
   ops/             grayscale, threshold, otsu, adaptive threshold, brightness, contrast
   filter/          convolution, box blur, gaussian blur, sharpen, median blur
-  edge/            sobel and gradient magnitude
+  edge/            sobel, gradient magnitude, canny
   morphology/      binary morphology operators
-  components/      connected components and bounding boxes
+  components/      connected components, contours, and bounding boxes
   export/          PNG encoding, SVG overlays, HTML reports
   demo_support/    demo-only file writing helpers
   demo/            runnable demo packages
@@ -57,13 +57,17 @@ let blurred = try! @filter.gaussian_blur(gray, radius=1)
 let resized = try! @image.resize_nearest(gray, 8, 8)
 let rotated = try! @image.rotate90_cw(gray)
 let edges = try! @edge.gradient_magnitude(blurred)
+let canny = try! @edge.canny_edges(blurred, 48, 96)
 let blobs = try! @components.connected_components(binary, min_area=4)
+let contours = try! @components.find_contours(binary)
 ignore(adaptive)
 ignore(denoised)
 ignore(resized)
 ignore(rotated)
 ignore(edges)
+ignore(canny)
 ignore(blobs)
+ignore(contours)
 ```
 
 Export a grayscale image as PNG bytes:
@@ -108,6 +112,7 @@ Outputs:
 - `examples/output/object_counting_input.png`
 - `examples/output/object_counting_binary_v1_0.png`
 - `examples/output/object_counting_binary.png`
+- `examples/output/object_counting_contours.png`
 - `examples/output/object_counting_overlay.svg`
 - `examples/output/object_counting_report.html`
 
@@ -121,6 +126,7 @@ Outputs:
 
 - `examples/output/edge_detection_input.png`
 - `examples/output/edge_detection_edges.png`
+- `examples/output/edge_detection_canny.png`
 - `examples/output/edge_detection_report.html`
 
 Document enhancement:
@@ -136,13 +142,26 @@ Outputs:
 - `examples/output/document_enhancement_output.png`
 - `examples/output/document_enhancement_report.html`
 
-## v1.0 vs v1.1
+## Version Stages
 
-The bundled demo assets are kept stable so `v1.0` and `v1.1` remain directly comparable.
+- `v1.0`
+  Focused on the first complete visual-analysis chain: image containers, thresholding, filtering, Sobel edges, binary morphology, connected components, and export.
+- `v1.1`
+  Focused on robustness improvements: Otsu thresholding, adaptive thresholding, median blur, and gray-image transforms.
+- `v1.2`
+  Focuses on edge and contour analysis: Canny edges, contour extraction, contour statistics, and upgraded edge/counting demos.
+
+## v1.0 vs v1.1 vs v1.2
+
+The bundled demo assets are kept stable so `v1.0`, `v1.1`, and `v1.2` remain directly comparable.
 
 - Object counting:
   `v1.0` used `threshold(120)` and detected `5` objects on the bundled asset.
   `v1.1` uses `median_blur(radius=1) -> otsu_threshold` and also detects `5` objects, while removing the fixed threshold constant from the counting path.
+  `v1.2` keeps the `v1.1` binary path and adds contour extraction plus a rendered contour mask for the same binary image.
+- Edge detection:
+  `v1.1` exported the Sobel gradient magnitude edge map.
+  `v1.2` keeps that output and adds a binary `Canny` edge map for direct comparison.
 - Document enhancement:
   `v1.0` used a fixed threshold after brightness and contrast adjustment.
   `v1.1` preserves the `v1.0` output in `document_enhancement_output_v1_0.png` and writes the optimized `median_blur -> adaptive_threshold_mean` result to `document_enhancement_output.png`.
@@ -156,9 +175,9 @@ Current tests cover:
 - PNG decode adaptation to `RgbImage`
 - grayscale, global thresholding, Otsu thresholding, and adaptive thresholding
 - filtering, border handling, and median blur behavior
-- Sobel gradient behavior
+- Sobel and Canny edge behavior
 - binary morphology behavior
-- connected components and area filtering
+- connected components, contour extraction, and contour statistics
 - SVG/HTML export rendering
 - PNG signature generation
 
