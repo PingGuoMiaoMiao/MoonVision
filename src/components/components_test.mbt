@@ -111,6 +111,14 @@ test "find contours extracts a single square contour" {
   inspect(contour_bbox(contours[0]).width(), content="2")
   inspect(contour_bbox(contours[0]).height(), content="2")
   inspect(contours[0].points().length(), content="4")
+  inspect(contours[0].points()[0].x(), content="1")
+  inspect(contours[0].points()[0].y(), content="1")
+  inspect(contours[0].points()[1].x(), content="2")
+  inspect(contours[0].points()[1].y(), content="1")
+  inspect(contours[0].points()[2].x(), content="2")
+  inspect(contours[0].points()[2].y(), content="2")
+  inspect(contours[0].points()[3].x(), content="1")
+  inspect(contours[0].points()[3].y(), content="2")
 }
 
 ///|
@@ -175,4 +183,40 @@ test "find contours supports edge-touching shapes" {
   inspect(contour_bbox(contours[0]).y(), content="0")
   inspect(contour_bbox(contours[0]).width(), content="2")
   inspect(contour_bbox(contours[0]).height(), content="2")
+}
+
+///|
+test "find contours preserves boundary walk order on thin lines" {
+  let line = try! @image.gray_from_array(
+    5,
+    3,
+    [
+      b'\x00',
+      b'\x00',
+      b'\x00',
+      b'\x00',
+      b'\x00',
+      b'\x00',
+      b'\xFF',
+      b'\xFF',
+      b'\xFF',
+      b'\x00',
+      b'\x00',
+      b'\x00',
+      b'\x00',
+      b'\x00',
+      b'\x00',
+    ],
+  )
+  let contours = try! find_contours(line)
+  inspect(contours.length(), content="1")
+  inspect(contours[0].points().length(), content="4")
+  inspect(contours[0].points()[0].x(), content="1")
+  inspect(contours[0].points()[0].y(), content="1")
+  inspect(contours[0].points()[1].x(), content="2")
+  inspect(contours[0].points()[1].y(), content="1")
+  inspect(contours[0].points()[2].x(), content="3")
+  inspect(contours[0].points()[2].y(), content="1")
+  inspect(contours[0].points()[3].x(), content="2")
+  inspect(contours[0].points()[3].y(), content="1")
 }
