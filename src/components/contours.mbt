@@ -97,6 +97,8 @@ fn next_boundary_direction(
   width : Int,
   height : Int,
   current : Point,
+  previous : Point?,
+  start : Point,
   incoming_direction : Int,
 ) -> Int {
   let directions = contour_directions()
@@ -109,7 +111,17 @@ fn next_boundary_direction(
       continue
     }
     if contour_mask_foreground(boundary_mask, width, nx, ny) {
-      return direction
+      if nx == start.x && ny == start.y {
+        return direction
+      }
+      match previous {
+        Some(prev) => {
+          if nx != prev.x || ny != prev.y {
+            return direction
+          }
+        }
+        None => return direction
+      }
     }
   }
   -1
@@ -125,6 +137,7 @@ fn trace_boundary_points(
   let directions = contour_directions()
   let points = [start]
   let mut current = start
+  let mut previous : Point? = None
   let mut incoming_direction = 6
   let mut steps = 0
 
@@ -136,6 +149,8 @@ fn trace_boundary_points(
       width,
       height,
       current,
+      previous,
+      start,
       incoming_direction,
     )
     if direction == -1 {
@@ -149,6 +164,7 @@ fn trace_boundary_points(
     }
 
     points.push(next)
+    previous = Some(current)
     current = next
     incoming_direction = (direction + 4) % directions.length()
     steps = steps + 1
