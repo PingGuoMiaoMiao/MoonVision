@@ -2,7 +2,7 @@
 
 MoonVision is a MoonBit-native lightweight image processing and basic computer vision library.
 
-The current `v1.2` line focuses on:
+The current `v1.3` line focuses on:
 
 - flat image containers: `GrayImage`, `RgbImage`
 - PNG decode to `RgbImage` through a vendored adapter layer
@@ -11,7 +11,7 @@ The current `v1.2` line focuses on:
 - gray-image geometric transforms: nearest-neighbor resize, horizontal flip, vertical flip, 90-degree rotation
 - edge detection: Sobel X/Y, gradient magnitude, binary edge extraction, Canny
 - binary morphology: erosion, dilation, opening, closing
-- connected components, ordered contour extraction, contour statistics, and bounding boxes
+- connected components, contour hierarchy, contour statistics, and bounding boxes
 - visual export: PNG bytes, SVG overlays, HTML reports
 
 ## Module Layout
@@ -60,6 +60,8 @@ let edges = try! @edge.gradient_magnitude(blurred)
 let canny = try! @edge.canny_edges(blurred, 48, 96)
 let blobs = try! @components.connected_components(binary, min_area=4)
 let contours = try! @components.find_contours(binary)
+let first_kind = @components.contour_kind(contours[0])
+let first_parent = @components.contour_parent_index(contours[0])
 ignore(adaptive)
 ignore(denoised)
 ignore(resized)
@@ -68,10 +70,12 @@ ignore(edges)
 ignore(canny)
 ignore(blobs)
 ignore(contours)
+ignore(first_kind)
+ignore(first_parent)
 ```
 
-`find_contours` returns ordered boundary walks for binary foreground regions, along with area, perimeter, and bounding-box statistics for the traced region.
-In `v1.2`, one contour is returned per connected foreground region; inner-hole hierarchy is not exposed separately.
+`find_contours` returns ordered boundary walks for binary foreground regions, along with area, perimeter, bounding-box, outer/hole kind, and optional parent-contour metadata.
+In `v1.3`, contours are returned per traced boundary instead of per connected foreground region.
 
 Export a grayscale image as PNG bytes:
 
@@ -153,15 +157,18 @@ Outputs:
   Focused on robustness improvements: Otsu thresholding, adaptive thresholding, median blur, and gray-image transforms.
 - `v1.2`
   Focuses on edge and contour analysis: Canny edges, contour extraction, contour statistics, and upgraded edge/counting demos.
+- `v1.3`
+  Refines contour semantics into outer/hole-aware hierarchy output, with deterministic parent-child relationships for nested structures.
 
-## v1.0 vs v1.1 vs v1.2
+## v1.0 vs v1.1 vs v1.2 vs v1.3
 
-The bundled demo assets are kept stable so `v1.0`, `v1.1`, and `v1.2` remain directly comparable.
+The bundled demo assets are kept stable so `v1.0`, `v1.1`, `v1.2`, and `v1.3` remain directly comparable.
 
 - Object counting:
   `v1.0` used `threshold(120)` and detected `5` objects on the bundled asset.
   `v1.1` uses `median_blur(radius=1) -> otsu_threshold` and also detects `5` objects, while removing the fixed threshold constant from the counting path.
   `v1.2` keeps the `v1.1` binary path and adds ordered contour tracing plus a rendered contour mask for the same binary image.
+  `v1.3` keeps the `v1.1` binary path, but reports outer contours and hole contours separately instead of treating every contour as a traced region count.
 - Edge detection:
   `v1.1` exported the Sobel gradient magnitude edge map.
   `v1.2` keeps that output and adds a binary `Canny` edge map for direct comparison.
@@ -180,7 +187,7 @@ Current tests cover:
 - filtering, border handling, and median blur behavior
 - Sobel and Canny edge behavior
 - binary morphology behavior
-- connected components, ordered contour extraction, and contour statistics
+- connected components, contour hierarchy, and contour statistics
 - SVG/HTML export rendering
 - PNG signature generation
 

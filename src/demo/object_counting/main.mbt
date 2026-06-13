@@ -36,6 +36,28 @@ fn largest_contour_area(contours : Array[@components.Contour]) -> Int {
   largest
 }
 
+fn count_outer_contours(contours : Array[@components.Contour]) -> Int {
+  let mut count = 0
+  for contour in contours {
+    match @components.contour_kind(contour) {
+      Outer => count = count + 1
+      Hole => ()
+    }
+  }
+  count
+}
+
+fn count_hole_contours(contours : Array[@components.Contour]) -> Int {
+  let mut count = 0
+  for contour in contours {
+    match @components.contour_kind(contour) {
+      Outer => ()
+      Hole => count = count + 1
+    }
+  }
+  count
+}
+
 fn longest_traced_contour(contours : Array[@components.Contour]) -> Int {
   let mut longest = 0
   for contour in contours {
@@ -59,6 +81,8 @@ fn main {
   )
   let components = try! @components.connected_components(binary, min_area=20)
   let contours = try! @components.find_contours(binary)
+  let outer_contours = count_outer_contours(contours)
+  let hole_contours = count_hole_contours(contours)
   let contour_image = contour_mask(binary.width(), binary.height(), contours)
 
   let input_name = "object_counting_input.png"
@@ -83,11 +107,13 @@ fn main {
       [
         "v1.0 pipeline: grayscale -> fixed threshold(120) -> connected components",
         "v1.1 pipeline: grayscale -> median blur(radius=1) -> otsu threshold -> connected components",
-        "v1.2 contour analysis: find_contours(binary, connectivity=8) -> ordered contour walk + traced-region stats",
+        "v1.3 contour analysis: find_contours(binary, connectivity=8) -> outer/hole contour hierarchy",
         "v1.0 detected objects: " + baseline_components.length().to_string(),
         "v1.1 detected objects: " + components.length().to_string(),
-        "v1.2 traced contours: " + contours.length().to_string(),
-        "largest traced region area: " + largest_contour_area(contours).to_string(),
+        "v1.3 all contours: " + contours.length().to_string(),
+        "v1.3 outer contours: " + outer_contours.to_string(),
+        "v1.3 hole contours: " + hole_contours.to_string(),
+        "largest contour area: " + largest_contour_area(contours).to_string(),
         "longest traced contour path: " + longest_traced_contour(contours).to_string(),
         "input asset: " + asset_path,
         "minimum area filter: 20 pixels",
@@ -104,6 +130,8 @@ fn main {
 
   println("v1.0 detected objects: " + baseline_components.length().to_string())
   println("v1.1 detected objects: " + components.length().to_string())
-  println("v1.2 traced contours: " + contours.length().to_string())
+  println("v1.3 all contours: " + contours.length().to_string())
+  println("v1.3 outer contours: " + outer_contours.to_string())
+  println("v1.3 hole contours: " + hole_contours.to_string())
   println("report: " + output_dir + report_name)
 }
