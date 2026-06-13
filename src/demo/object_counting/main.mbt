@@ -36,6 +36,17 @@ fn largest_contour_area(contours : Array[@components.Contour]) -> Int {
   largest
 }
 
+fn longest_traced_contour(contours : Array[@components.Contour]) -> Int {
+  let mut longest = 0
+  for contour in contours {
+    let point_count = contour.points().length()
+    if point_count > longest {
+      longest = point_count
+    }
+  }
+  longest
+}
+
 fn main {
   let input = try! @image.rgb_from_png_bytes(try! @demoio.read_bytes_from_file(asset_path))
   let gray = try! @ops.grayscale(input)
@@ -75,8 +86,9 @@ fn main {
         "v1.2 contour analysis: find_contours(binary, connectivity=8) -> contour stats",
         "v1.0 detected objects: " + baseline_components.length().to_string(),
         "v1.1 detected objects: " + components.length().to_string(),
-        "v1.2 contours: " + contours.length().to_string(),
+        "v1.2 traced contours: " + contours.length().to_string(),
         "largest contour area: " + largest_contour_area(contours).to_string(),
+        "longest traced contour path: " + longest_traced_contour(contours).to_string(),
         "input asset: " + asset_path,
         "minimum area filter: 20 pixels",
       ],
@@ -92,6 +104,6 @@ fn main {
 
   println("v1.0 detected objects: " + baseline_components.length().to_string())
   println("v1.1 detected objects: " + components.length().to_string())
-  println("v1.2 contours: " + contours.length().to_string())
+  println("v1.2 traced contours: " + contours.length().to_string())
   println("report: " + output_dir + report_name)
 }

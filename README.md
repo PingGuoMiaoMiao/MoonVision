@@ -11,7 +11,7 @@ The current `v1.2` line focuses on:
 - gray-image geometric transforms: nearest-neighbor resize, horizontal flip, vertical flip, 90-degree rotation
 - edge detection: Sobel X/Y, gradient magnitude, binary edge extraction, Canny
 - binary morphology: erosion, dilation, opening, closing
-- connected components, contour extraction, contour statistics, and bounding boxes
+- connected components, ordered contour extraction, contour statistics, and bounding boxes
 - visual export: PNG bytes, SVG overlays, HTML reports
 
 ## Module Layout
@@ -69,6 +69,8 @@ ignore(canny)
 ignore(blobs)
 ignore(contours)
 ```
+
+`find_contours` returns ordered boundary walks for binary foreground regions, along with area, perimeter, and bounding-box statistics for the traced region.
 
 Export a grayscale image as PNG bytes:
 
@@ -158,7 +160,7 @@ The bundled demo assets are kept stable so `v1.0`, `v1.1`, and `v1.2` remain dir
 - Object counting:
   `v1.0` used `threshold(120)` and detected `5` objects on the bundled asset.
   `v1.1` uses `median_blur(radius=1) -> otsu_threshold` and also detects `5` objects, while removing the fixed threshold constant from the counting path.
-  `v1.2` keeps the `v1.1` binary path and adds contour extraction plus a rendered contour mask for the same binary image.
+  `v1.2` keeps the `v1.1` binary path and adds ordered contour tracing plus a rendered contour mask for the same binary image.
 - Edge detection:
   `v1.1` exported the Sobel gradient magnitude edge map.
   `v1.2` keeps that output and adds a binary `Canny` edge map for direct comparison.
@@ -177,7 +179,7 @@ Current tests cover:
 - filtering, border handling, and median blur behavior
 - Sobel and Canny edge behavior
 - binary morphology behavior
-- connected components, contour extraction, and contour statistics
+- connected components, ordered contour extraction, and contour statistics
 - SVG/HTML export rendering
 - PNG signature generation
 
