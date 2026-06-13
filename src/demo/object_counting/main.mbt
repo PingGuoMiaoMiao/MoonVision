@@ -122,7 +122,7 @@ fn main {
         @export.report_image("input asset", input_name),
         @export.report_image("v1.0 binary mask", baseline_binary_name),
         @export.report_image("v1.1 binary mask", binary_name),
-        @export.report_image("v1.2 contour mask", contour_name),
+        @export.report_image("v1.3 contour hierarchy mask", contour_name),
         @export.report_image("bounding box overlay", overlay_name),
       ],
     ),

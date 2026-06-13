@@ -168,7 +168,7 @@ The bundled demo assets are kept stable so `v1.0`, `v1.1`, `v1.2`, and `v1.3` re
   `v1.0` used `threshold(120)` and detected `5` objects on the bundled asset.
   `v1.1` uses `median_blur(radius=1) -> otsu_threshold` and also detects `5` objects, while removing the fixed threshold constant from the counting path.
   `v1.2` keeps the `v1.1` binary path and adds ordered contour tracing plus a rendered contour mask for the same binary image.
-  `v1.3` keeps the `v1.1` binary path, but reports outer contours and hole contours separately instead of treating every contour as a traced region count.
+  `v1.3` keeps the `v1.1` binary path, reports outer contours and hole contours separately, and labels the rendered contour mask as hierarchy-aware output.
 - Edge detection:
   `v1.1` exported the Sobel gradient magnitude edge map.
   `v1.2` keeps that output and adds a binary `Canny` edge map for direct comparison.
