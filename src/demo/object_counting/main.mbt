@@ -83,11 +83,11 @@ fn main {
       [
         "v1.0 pipeline: grayscale -> fixed threshold(120) -> connected components",
         "v1.1 pipeline: grayscale -> median blur(radius=1) -> otsu threshold -> connected components",
-        "v1.2 contour analysis: find_contours(binary, connectivity=8) -> contour stats",
+        "v1.2 contour analysis: find_contours(binary, connectivity=8) -> ordered contour walk + traced-region stats",
         "v1.0 detected objects: " + baseline_components.length().to_string(),
         "v1.1 detected objects: " + components.length().to_string(),
         "v1.2 traced contours: " + contours.length().to_string(),
-        "largest contour area: " + largest_contour_area(contours).to_string(),
+        "largest traced region area: " + largest_contour_area(contours).to_string(),
         "longest traced contour path: " + longest_traced_contour(contours).to_string(),
         "input asset: " + asset_path,
         "minimum area filter: 20 pixels",

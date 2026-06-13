@@ -218,3 +218,37 @@ test "find contours preserves boundary walk order on thin lines" {
   inspect(contours[0].points()[2].x(), content="3")
   inspect(contours[0].points()[2].y(), content="1")
 }
+
+///|
+test "find contours keeps hollow foreground as one traced region in v1.2" {
+  let hollow = try! @image.gray_from_array(
+    4,
+    4,
+    [
+      b'\xFF',
+      b'\xFF',
+      b'\xFF',
+      b'\xFF',
+      b'\xFF',
+      b'\x00',
+      b'\x00',
+      b'\xFF',
+      b'\xFF',
+      b'\x00',
+      b'\x00',
+      b'\xFF',
+      b'\xFF',
+      b'\xFF',
+      b'\xFF',
+      b'\xFF',
+    ],
+  )
+  let contours = try! find_contours(hollow)
+  inspect(contours.length(), content="1")
+  inspect(contour_area(contours[0]), content="12")
+  inspect(contour_perimeter(contours[0]), content="24")
+  inspect(contour_bbox(contours[0]).x(), content="0")
+  inspect(contour_bbox(contours[0]).y(), content="0")
+  inspect(contour_bbox(contours[0]).width(), content="4")
+  inspect(contour_bbox(contours[0]).height(), content="4")
+}

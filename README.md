@@ -71,6 +71,7 @@ ignore(contours)
 ```
 
 `find_contours` returns ordered boundary walks for binary foreground regions, along with area, perimeter, and bounding-box statistics for the traced region.
+In `v1.2`, one contour is returned per connected foreground region; inner-hole hierarchy is not exposed separately.
 
 Export a grayscale image as PNG bytes:
 
