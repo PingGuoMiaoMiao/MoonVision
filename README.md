@@ -14,6 +14,13 @@ The current `v1.4` line focuses on:
 - connected components, contour hierarchy, contour statistics, shape analysis, and bounding boxes
 - visual export: PNG bytes, SVG overlays, HTML reports
 
+The current `v1.5` bacteria-review line extends the demo layer with:
+
+- a lightweight bacteria probe under `src/demo/bacteria_probe`
+- a large-lesion clustering route derived from dark binary candidates
+- a labeled-review script that rebuilds one native executable and reuses it across a batch
+- label-level and size-bucket recall summaries for the current annotated bacteria set
+
 ## Module Layout
 
 ```text
@@ -160,6 +167,19 @@ Outputs:
 - `examples/output/document_enhancement_output.png`
 - `examples/output/document_enhancement_report.html`
 
+Bacteria labeled review:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File tools/run_labeled_bacteria_review.ps1 -ForceRerun
+```
+
+Outputs:
+
+- `examples/output/bacteria_labeled_review/index.html`
+- `examples/output/bacteria_labeled_review/summary_readable.csv`
+- `examples/output/bacteria_labeled_review/label_summary.csv`
+- `examples/output/bacteria_labeled_review/size_summary.csv`
+
 ## Version Stages
 
 - `v1.0`
@@ -172,6 +192,8 @@ Outputs:
   Refines contour semantics into outer/hole-aware hierarchy output, with deterministic parent-child relationships for nested structures.
 - `v1.4`
   Extends the contour layer into lightweight shape analysis with contour approximation, convex hull extraction, minimum-area rotated rectangles, and descriptor helpers.
+- `v1.5`
+  Focuses on the labeled bacteria-review path: a tighter preset set, a large-lesion cluster route, native executable reuse during batch review, and richer recall reporting by label and size bucket.
 
 ## v1.0 vs v1.1 vs v1.2 vs v1.3 vs v1.4
 
