@@ -542,6 +542,27 @@ fn presets() -> Array[ProbePreset] {
       cluster_only: false,
       reuse_previous_candidates: true,
     },
+    {
+      name: "dark_small_plus_cluster_tight",
+      invert_mask: true,
+      brightness_delta: 10,
+      contrast_factor: 1.20,
+      roi_margin_divisor: 25,
+      roi_min_margin: 16,
+      roi_max_margin: 80,
+      open_radius: 1,
+      close_radius: 1,
+      min_area: 1500,
+      max_area: 90000,
+      max_aspect_x100: 320,
+      min_fill_x1000: 90,
+      edge_margin: 8,
+      merge_gap: 40,
+      min_cluster_boxes: 2,
+      min_cluster_bbox_area: 80000,
+      cluster_only: false,
+      reuse_previous_candidates: true,
+    },
   ]
 }
 
