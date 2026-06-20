@@ -360,6 +360,24 @@ fn cluster_boxes(boxes : Array[DetectedBox], preset : ProbePreset) -> Array[Dete
   merged
 }
 
+fn output_boxes(candidate_boxes : Array[DetectedBox], preset : ProbePreset) -> Array[DetectedBox] {
+  let merged_boxes = cluster_boxes(candidate_boxes, preset)
+  if preset.cluster_only {
+    merged_boxes
+  } else if preset.merge_gap > 0 && merged_boxes.length() > 0 {
+    let combined = []
+    for box in candidate_boxes {
+      combined.push(box)
+    }
+    for box in merged_boxes {
+      combined.push(box)
+    }
+    combined
+  } else {
+    candidate_boxes
+  }
+}
+
 fn boxes_svg(
   width : Int,
   height : Int,
@@ -503,6 +521,27 @@ fn presets() -> Array[ProbePreset] {
       cluster_only: true,
       reuse_previous_candidates: true,
     },
+    {
+      name: "dark_small_plus_cluster",
+      invert_mask: true,
+      brightness_delta: 10,
+      contrast_factor: 1.20,
+      roi_margin_divisor: 25,
+      roi_min_margin: 16,
+      roi_max_margin: 80,
+      open_radius: 1,
+      close_radius: 1,
+      min_area: 1500,
+      max_area: 90000,
+      max_aspect_x100: 320,
+      min_fill_x1000: 90,
+      edge_margin: 8,
+      merge_gap: 120,
+      min_cluster_boxes: 2,
+      min_cluster_bbox_area: 120000,
+      cluster_only: false,
+      reuse_previous_candidates: true,
+    },
   ]
 }
 
@@ -570,7 +609,7 @@ fn main {
       next_boxes
     }
     let merged_boxes = cluster_boxes(candidate_boxes, preset)
-    let boxes = if preset.cluster_only { merged_boxes } else { candidate_boxes }
+    let boxes = output_boxes(candidate_boxes, preset)
     try! @demoio.write_string_to_file(output_dir + roi_csv_name, roi_csv(roi))
     try! @demoio.write_string_to_file(
       output_dir + roi_overlay_name,
@@ -594,6 +633,8 @@ fn main {
       boxes.length().to_string() +
       ", candidates=" +
       candidate_boxes.length().to_string() +
+      ", merged=" +
+      merged_boxes.length().to_string() +
       ", roi_margin_divisor=" +
       preset.roi_margin_divisor.to_string() +
       ", cluster_only=" +
@@ -667,6 +708,26 @@ test "cluster boxes merges nearby fragments into a single large box" {
   inspect(merged[0].y, content="275")
   inspect(merged[0].width, content="860")
   inspect(merged[0].height, content="1513")
+}
+
+///|
+test "output boxes appends merged cluster box for hybrid route" {
+  let boxes = [
+    { x: 1007, y: 275, width: 469, height: 320, area: 38436 },
+    { x: 616, y: 706, width: 397, height: 713, area: 115558 },
+    { x: 1189, y: 1628, width: 154, height: 160, area: 11999 },
+  ]
+  let preset = {
+    ..cluster_preset_fixture(),
+    name: "hybrid_fixture",
+    cluster_only: false,
+  }
+  let combined = output_boxes(boxes, preset)
+  inspect(combined.length(), content="4")
+  inspect(combined[3].x, content="616")
+  inspect(combined[3].y, content="275")
+  inspect(combined[3].width, content="860")
+  inspect(combined[3].height, content="1513")
 }
 
 ///|
