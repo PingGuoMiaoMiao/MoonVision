@@ -23,6 +23,8 @@ struct ProbePreset {
   min_cluster_bbox_area : Int
   cluster_only : Bool
   reuse_previous_candidates : Bool
+  shrink_x100 : Int
+  shrink_max_bbox_area : Int
 } derive(Eq, Show)
 
 struct ProbeRoi {
@@ -362,7 +364,7 @@ fn cluster_boxes(boxes : Array[DetectedBox], preset : ProbePreset) -> Array[Dete
 
 fn output_boxes(candidate_boxes : Array[DetectedBox], preset : ProbePreset) -> Array[DetectedBox] {
   let merged_boxes = cluster_boxes(candidate_boxes, preset)
-  if preset.cluster_only {
+  let raw_boxes = if preset.cluster_only {
     merged_boxes
   } else if preset.merge_gap > 0 && merged_boxes.length() > 0 {
     let combined = []
@@ -376,6 +378,35 @@ fn output_boxes(candidate_boxes : Array[DetectedBox], preset : ProbePreset) -> A
   } else {
     candidate_boxes
   }
+  let base_boxes = if preset.shrink_max_bbox_area > 0 {
+    let filtered = []
+    for box in raw_boxes {
+      if box.width * box.height <= preset.shrink_max_bbox_area {
+        filtered.push(box)
+      }
+    }
+    filtered
+  } else {
+    raw_boxes
+  }
+  if preset.shrink_x100 <= 0 || preset.shrink_x100 >= 100 {
+    return base_boxes
+  }
+  let shrink_boxes = []
+  for box in base_boxes {
+    let next_width = max_int(1, box.width * preset.shrink_x100 / 100)
+    let next_height = max_int(1, box.height * preset.shrink_x100 / 100)
+    let next_x = box.x + (box.width - next_width) / 2
+    let next_y = box.y + (box.height - next_height) / 2
+    shrink_boxes.push({
+      x: next_x,
+      y: next_y,
+      width: next_width,
+      height: next_height,
+      area: box.area,
+    })
+  }
+  shrink_boxes
 }
 
 fn boxes_svg(
@@ -478,6 +509,8 @@ fn presets() -> Array[ProbePreset] {
       min_cluster_bbox_area: 0,
       cluster_only: false,
       reuse_previous_candidates: false,
+      shrink_x100: 100,
+      shrink_max_bbox_area: 0,
     },
     {
       name: "dark_small_tight",
@@ -499,6 +532,8 @@ fn presets() -> Array[ProbePreset] {
       min_cluster_bbox_area: 0,
       cluster_only: false,
       reuse_previous_candidates: false,
+      shrink_x100: 100,
+      shrink_max_bbox_area: 0,
     },
     {
       name: "dark_large_cluster",
@@ -520,6 +555,8 @@ fn presets() -> Array[ProbePreset] {
       min_cluster_bbox_area: 120000,
       cluster_only: true,
       reuse_previous_candidates: true,
+      shrink_x100: 100,
+      shrink_max_bbox_area: 0,
     },
     {
       name: "dark_small_plus_cluster",
@@ -541,6 +578,8 @@ fn presets() -> Array[ProbePreset] {
       min_cluster_bbox_area: 120000,
       cluster_only: false,
       reuse_previous_candidates: true,
+      shrink_x100: 100,
+      shrink_max_bbox_area: 0,
     },
     {
       name: "dark_small_plus_cluster_tight",
@@ -562,6 +601,54 @@ fn presets() -> Array[ProbePreset] {
       min_cluster_bbox_area: 80000,
       cluster_only: false,
       reuse_previous_candidates: true,
+      shrink_x100: 100,
+      shrink_max_bbox_area: 0,
+    },
+    {
+      name: "dark_small_shrunk",
+      invert_mask: true,
+      brightness_delta: 10,
+      contrast_factor: 1.20,
+      roi_margin_divisor: 25,
+      roi_min_margin: 16,
+      roi_max_margin: 80,
+      open_radius: 1,
+      close_radius: 1,
+      min_area: 1500,
+      max_area: 90000,
+      max_aspect_x100: 320,
+      min_fill_x1000: 90,
+      edge_margin: 8,
+      merge_gap: 0,
+      min_cluster_boxes: 0,
+      min_cluster_bbox_area: 0,
+      cluster_only: false,
+      reuse_previous_candidates: true,
+      shrink_x100: 90,
+      shrink_max_bbox_area: 120000,
+    },
+    {
+      name: "dark_small_filtered",
+      invert_mask: true,
+      brightness_delta: 10,
+      contrast_factor: 1.20,
+      roi_margin_divisor: 25,
+      roi_min_margin: 16,
+      roi_max_margin: 80,
+      open_radius: 1,
+      close_radius: 1,
+      min_area: 1500,
+      max_area: 90000,
+      max_aspect_x100: 320,
+      min_fill_x1000: 90,
+      edge_margin: 8,
+      merge_gap: 0,
+      min_cluster_boxes: 0,
+      min_cluster_bbox_area: 0,
+      cluster_only: false,
+      reuse_previous_candidates: true,
+      shrink_x100: 100,
+      shrink_max_bbox_area: 40000,
     },
   ]
 }
@@ -713,6 +800,8 @@ fn cluster_preset_fixture() -> ProbePreset {
     min_cluster_bbox_area: 120000,
     cluster_only: true,
     reuse_previous_candidates: false,
+    shrink_x100: 100,
+    shrink_max_bbox_area: 0,
   }
 }
 
@@ -749,6 +838,76 @@ test "output boxes appends merged cluster box for hybrid route" {
   inspect(combined[3].y, content="275")
   inspect(combined[3].width, content="860")
   inspect(combined[3].height, content="1513")
+}
+
+///|
+test "output boxes shrinks qualifying boxes for shrunk route" {
+  let boxes = [
+    { x: 100, y: 200, width: 100, height: 50, area: 3000 },
+    { x: 300, y: 400, width: 400, height: 200, area: 60000 },
+  ]
+  let preset = {
+    ..cluster_preset_fixture(),
+    name: "shrunk_fixture",
+    cluster_only: false,
+    merge_gap: 0,
+    shrink_x100: 90,
+    shrink_max_bbox_area: 120000,
+  }
+  let shrunk = output_boxes(boxes, preset)
+  inspect(shrunk.length(), content="2")
+  inspect(shrunk[0].x, content="105")
+  inspect(shrunk[0].y, content="202")
+  inspect(shrunk[0].width, content="90")
+  inspect(shrunk[0].height, content="45")
+  inspect(shrunk[1].x, content="320")
+  inspect(shrunk[1].y, content="410")
+  inspect(shrunk[1].width, content="360")
+  inspect(shrunk[1].height, content="180")
+}
+
+///|
+test "output boxes drops oversized boxes for shrunk route" {
+  let boxes = [
+    { x: 100, y: 200, width: 100, height: 50, area: 3000 },
+    { x: 300, y: 400, width: 500, height: 400, area: 100000 },
+  ]
+  let preset = {
+    ..cluster_preset_fixture(),
+    name: "shrunk_limit_fixture",
+    cluster_only: false,
+    merge_gap: 0,
+    shrink_x100: 90,
+    shrink_max_bbox_area: 10000,
+  }
+  let shrunk = output_boxes(boxes, preset)
+  inspect(shrunk.length(), content="1")
+  inspect(shrunk[0].x, content="105")
+  inspect(shrunk[0].y, content="202")
+  inspect(shrunk[0].width, content="90")
+  inspect(shrunk[0].height, content="45")
+}
+
+///|
+test "output boxes filters oversized boxes without shrinking" {
+  let boxes = [
+    { x: 100, y: 200, width: 100, height: 50, area: 3000 },
+    { x: 300, y: 400, width: 500, height: 400, area: 100000 },
+  ]
+  let preset = {
+    ..cluster_preset_fixture(),
+    name: "filtered_fixture",
+    cluster_only: false,
+    merge_gap: 0,
+    shrink_x100: 100,
+    shrink_max_bbox_area: 10000,
+  }
+  let filtered = output_boxes(boxes, preset)
+  inspect(filtered.length(), content="1")
+  inspect(filtered[0].x, content="100")
+  inspect(filtered[0].y, content="200")
+  inspect(filtered[0].width, content="100")
+  inspect(filtered[0].height, content="50")
 }
 
 ///|
