@@ -389,9 +389,12 @@ fn output_boxes(candidate_boxes : Array[DetectedBox], preset : ProbePreset) -> A
   } else {
     raw_boxes
   }
-  if preset.shrink_x100 <= 0 || preset.shrink_x100 >= 100 {
+  if preset.shrink_x100 <= 0 || preset.shrink_x100 == 100 {
     return base_boxes
   }
+  // Historical note: `shrink_x100` now behaves like a center-preserving box
+  // scale. Existing routes still use values below 100 for tightening, while
+  // expanded routes use values above 100 to recover near-miss overlaps.
   let shrink_boxes = []
   for box in base_boxes {
     let next_width = max_int(1, box.width * preset.shrink_x100 / 100)
@@ -605,6 +608,29 @@ fn presets() -> Array[ProbePreset] {
       shrink_max_bbox_area: 0,
     },
     {
+      name: "dark_small_wide_plus_cluster_expanded",
+      invert_mask: true,
+      brightness_delta: 10,
+      contrast_factor: 1.20,
+      roi_margin_divisor: 0,
+      roi_min_margin: 0,
+      roi_max_margin: 0,
+      open_radius: 1,
+      close_radius: 1,
+      min_area: 1500,
+      max_area: 90000,
+      max_aspect_x100: 320,
+      min_fill_x1000: 90,
+      edge_margin: 0,
+      merge_gap: 120,
+      min_cluster_boxes: 2,
+      min_cluster_bbox_area: 120000,
+      cluster_only: false,
+      reuse_previous_candidates: false,
+      shrink_x100: 120,
+      shrink_max_bbox_area: 0,
+    },
+    {
       name: "dark_large_cluster",
       invert_mask: true,
       brightness_delta: 10,
@@ -651,6 +677,29 @@ fn presets() -> Array[ProbePreset] {
       shrink_max_bbox_area: 0,
     },
     {
+      name: "dark_small_plus_cluster_expanded",
+      invert_mask: true,
+      brightness_delta: 10,
+      contrast_factor: 1.20,
+      roi_margin_divisor: 25,
+      roi_min_margin: 16,
+      roi_max_margin: 80,
+      open_radius: 1,
+      close_radius: 1,
+      min_area: 1500,
+      max_area: 90000,
+      max_aspect_x100: 320,
+      min_fill_x1000: 90,
+      edge_margin: 8,
+      merge_gap: 120,
+      min_cluster_boxes: 2,
+      min_cluster_bbox_area: 120000,
+      cluster_only: false,
+      reuse_previous_candidates: true,
+      shrink_x100: 120,
+      shrink_max_bbox_area: 0,
+    },
+    {
       name: "dark_small_plus_cluster_tight",
       invert_mask: true,
       brightness_delta: 10,
@@ -671,6 +720,29 @@ fn presets() -> Array[ProbePreset] {
       cluster_only: false,
       reuse_previous_candidates: true,
       shrink_x100: 100,
+      shrink_max_bbox_area: 0,
+    },
+    {
+      name: "dark_small_plus_cluster_tight_expanded",
+      invert_mask: true,
+      brightness_delta: 10,
+      contrast_factor: 1.20,
+      roi_margin_divisor: 25,
+      roi_min_margin: 16,
+      roi_max_margin: 80,
+      open_radius: 1,
+      close_radius: 1,
+      min_area: 1500,
+      max_area: 90000,
+      max_aspect_x100: 320,
+      min_fill_x1000: 90,
+      edge_margin: 8,
+      merge_gap: 40,
+      min_cluster_boxes: 2,
+      min_cluster_bbox_area: 80000,
+      cluster_only: false,
+      reuse_previous_candidates: true,
+      shrink_x100: 120,
       shrink_max_bbox_area: 0,
     },
     {
@@ -955,6 +1027,26 @@ test "output boxes drops oversized boxes for shrunk route" {
   inspect(shrunk[0].y, content="202")
   inspect(shrunk[0].width, content="90")
   inspect(shrunk[0].height, content="45")
+}
+
+///|
+test "output boxes expands boxes when scale is above one hundred" {
+  let boxes = [
+    { x: 100, y: 200, width: 100, height: 50, area: 3000 },
+  ]
+  let preset = {
+    ..cluster_preset_fixture(),
+    name: "expanded_fixture",
+    cluster_only: false,
+    merge_gap: 0,
+    shrink_x100: 120,
+  }
+  let expanded = output_boxes(boxes, preset)
+  inspect(expanded.length(), content="1")
+  inspect(expanded[0].x, content="90")
+  inspect(expanded[0].y, content="195")
+  inspect(expanded[0].width, content="120")
+  inspect(expanded[0].height, content="60")
 }
 
 ///|
