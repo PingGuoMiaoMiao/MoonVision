@@ -2,6 +2,8 @@ param(
   [string]$InputRoot = (Join-Path $env:USERPROFILE ("Desktop\" + [char]0x6253 + [char]0x6807)),
   [string]$OutputRoot = "C:\Users\chen\Desktop\MoonVision\examples\output\bacteria_labeled_review",
   [bool]$ExcludeSideViews = $true,
+  [string[]]$SampleFolders = @(),
+  [int]$MaxImages = 0,
   [switch]$ForceRerun
 )
 
@@ -350,6 +352,23 @@ $pairs = Get-ChildItem -File -Recurse $InputRoot |
     }
   }
 
+if ($SampleFolders.Count -gt 0) {
+  $sampleFolderSet = @{}
+  foreach ($sampleFolder in $SampleFolders) {
+    $sampleFolderSet[[string]$sampleFolder] = $true
+  }
+  $pairs = @($pairs | Where-Object {
+    $parentLeaf = Split-Path -Leaf (Split-Path -Parent $_.ImagePath)
+    $sampleFolderSet.ContainsKey($parentLeaf)
+  })
+} else {
+  $pairs = @($pairs)
+}
+
+if ($MaxImages -gt 0) {
+  $pairs = @($pairs | Select-Object -First $MaxImages)
+}
+
 $summary = @()
 $labelStats = @{}
 $annotationOutcomes = @()
@@ -424,6 +443,28 @@ foreach ($pair in $pairs) {
       @{ Expression = { [math]::Abs($_.CountDelta) }; Descending = $false } |
     Select-Object -First 1
 
+  $recallBest = $presetScoreRows |
+    Sort-Object `
+      @{ Expression = 'Recall'; Descending = $true }, `
+      @{ Expression = 'MatchedCount'; Descending = $true }, `
+      @{ Expression = 'FalseNegativeCount'; Descending = $false }, `
+      @{ Expression = 'FalsePositiveCount'; Descending = $false }, `
+      @{ Expression = 'F1'; Descending = $true } |
+    Select-Object -First 1
+
+  $precisionBest = $presetScoreRows |
+    Where-Object { $_.DetectedCount -gt 0 } |
+    Sort-Object `
+      @{ Expression = 'Precision'; Descending = $true }, `
+      @{ Expression = 'F1'; Descending = $true }, `
+      @{ Expression = 'MatchedCount'; Descending = $true }, `
+      @{ Expression = 'FalsePositiveCount'; Descending = $false }, `
+      @{ Expression = 'FalseNegativeCount'; Descending = $false } |
+    Select-Object -First 1
+  if ($null -eq $precisionBest) {
+    $precisionBest = $best
+  }
+
   $bestAlignment = New-AlignmentOverlaySvg `
     -Width ([int]$annotation.imageWidth) `
     -Height ([int]$annotation.imageHeight) `
@@ -485,6 +526,22 @@ foreach ($pair in $pairs) {
     Recall = $best.Recall
     F1 = $best.F1
     MeanIoU = $best.MeanIoU
+    RecallParamSet = $recallBest.ParamSet
+    RecallDetectedCount = $recallBest.DetectedCount
+    RecallMatchedCount = $recallBest.MatchedCount
+    RecallFalsePositiveCount = $recallBest.FalsePositiveCount
+    RecallFalseNegativeCount = $recallBest.FalseNegativeCount
+    RecallPrecision = $recallBest.Precision
+    RecallRecall = $recallBest.Recall
+    RecallF1 = $recallBest.F1
+    PrecisionParamSet = $precisionBest.ParamSet
+    PrecisionDetectedCount = $precisionBest.DetectedCount
+    PrecisionMatchedCount = $precisionBest.MatchedCount
+    PrecisionFalsePositiveCount = $precisionBest.FalsePositiveCount
+    PrecisionFalseNegativeCount = $precisionBest.FalseNegativeCount
+    PrecisionPrecision = $precisionBest.Precision
+    PrecisionRecall = $precisionBest.Recall
+    PrecisionF1 = $precisionBest.F1
     OutputFolder = $itemDir
   }
 }
@@ -493,7 +550,7 @@ $summary |
   Export-Csv -LiteralPath (Join-Path $OutputRoot "summary.csv") -NoTypeInformation -Encoding UTF8
 
 $summary |
-  Select-Object BatchFolder, SampleFolder, RelativePath, LabelCount, BestParamSet, BestDetectedCount, BestCountDeltaText, MatchedCount, FalsePositiveCount, FalseNegativeCount, Precision, Recall, F1, MeanIoU |
+  Select-Object BatchFolder, SampleFolder, RelativePath, LabelCount, BestParamSet, BestDetectedCount, BestCountDeltaText, MatchedCount, FalsePositiveCount, FalseNegativeCount, Precision, Recall, F1, MeanIoU, RecallParamSet, RecallDetectedCount, RecallMatchedCount, RecallFalsePositiveCount, RecallFalseNegativeCount, RecallPrecision, RecallRecall, RecallF1, PrecisionParamSet, PrecisionDetectedCount, PrecisionMatchedCount, PrecisionFalsePositiveCount, PrecisionFalseNegativeCount, PrecisionPrecision, PrecisionRecall, PrecisionF1 |
   Export-Csv -LiteralPath (Join-Path $OutputRoot "summary_readable.csv") -NoTypeInformation -Encoding UTF8
 
 $labelSummary = $labelStats.GetEnumerator() |
@@ -584,7 +641,7 @@ $rows = foreach ($item in $summary) {
   $annotationPath = (Get-RelativePath -BasePath $OutputRoot -TargetPath (Join-Path $item.OutputFolder "annotation_boxes.svg")).Replace('\', '/')
   $alignmentPath = (Get-RelativePath -BasePath $OutputRoot -TargetPath (Join-Path $item.OutputFolder "best_alignment.svg")).Replace('\', '/')
   $scoresPath = (Get-RelativePath -BasePath $OutputRoot -TargetPath (Join-Path $item.OutputFolder "preset_scores.csv")).Replace('\', '/')
-  "<tr><td>$([System.Security.SecurityElement]::Escape($item.BatchFolder))</td><td>$([System.Security.SecurityElement]::Escape($item.SampleFolder))</td><td>$([System.Security.SecurityElement]::Escape($item.RelativePath))</td><td>$($item.LabelCount)</td><td>$($item.BestParamSet)</td><td>$($item.BestDetectedCount)</td><td>$($item.BestCountDeltaText)</td><td>$($item.MatchedCount)</td><td>$($item.FalsePositiveCount)</td><td>$($item.FalseNegativeCount)</td><td>$($item.Precision)</td><td>$($item.Recall)</td><td>$($item.F1)</td><td>$($item.MeanIoU)</td><td><a href=""$sourcePath"">source</a></td><td><a href=""$annotationPath"">labels</a></td><td><a href=""$alignmentPath"">best alignment</a></td><td><a href=""$scoresPath"">preset scores</a></td><td><a href=""$reportPath"">probe report</a></td></tr>"
+  "<tr><td>$([System.Security.SecurityElement]::Escape($item.BatchFolder))</td><td>$([System.Security.SecurityElement]::Escape($item.SampleFolder))</td><td>$([System.Security.SecurityElement]::Escape($item.RelativePath))</td><td>$($item.LabelCount)</td><td>$($item.BestParamSet)</td><td>$($item.BestDetectedCount)</td><td>$($item.BestCountDeltaText)</td><td>$($item.MatchedCount)</td><td>$($item.FalsePositiveCount)</td><td>$($item.FalseNegativeCount)</td><td>$($item.Precision)</td><td>$($item.Recall)</td><td>$($item.F1)</td><td>$($item.MeanIoU)</td><td>$($item.RecallParamSet)</td><td>$($item.RecallMatchedCount)</td><td>$($item.RecallFalsePositiveCount)</td><td>$($item.RecallFalseNegativeCount)</td><td>$($item.RecallRecall)</td><td>$($item.PrecisionParamSet)</td><td>$($item.PrecisionMatchedCount)</td><td>$($item.PrecisionFalsePositiveCount)</td><td>$($item.PrecisionFalseNegativeCount)</td><td>$($item.PrecisionPrecision)</td><td><a href=""$sourcePath"">source</a></td><td><a href=""$annotationPath"">labels</a></td><td><a href=""$alignmentPath"">best alignment</a></td><td><a href=""$scoresPath"">preset scores</a></td><td><a href=""$reportPath"">probe report</a></td></tr>"
 }
 
 $scatterSvg = New-ScatterPlotSvg -Items $summary
@@ -727,6 +784,16 @@ $index = @"
         <th>Recall</th>
         <th>F1</th>
         <th>Mean IoU</th>
+        <th>Recall Param Set</th>
+        <th>Recall Matched</th>
+        <th>Recall False Positive</th>
+        <th>Recall False Negative</th>
+        <th>Recall Score</th>
+        <th>Precision Param Set</th>
+        <th>Precision Matched</th>
+        <th>Precision False Positive</th>
+        <th>Precision False Negative</th>
+        <th>Precision Score</th>
         <th>Source</th>
         <th>Label Overlay</th>
         <th>Best Alignment</th>

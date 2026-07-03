@@ -173,12 +173,26 @@ Bacteria labeled review:
 powershell -NoProfile -ExecutionPolicy Bypass -File tools/run_labeled_bacteria_review.ps1 -ForceRerun
 ```
 
+For quick validation during parameter tuning, restrict the run to specific sample folders:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File tools/run_labeled_bacteria_review.ps1 -SampleFolders 346
+```
+
+Or cap the number of reviewed images:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File tools/run_labeled_bacteria_review.ps1 -MaxImages 3
+```
+
 Outputs:
 
 - `examples/output/bacteria_labeled_review/index.html`
 - `examples/output/bacteria_labeled_review/summary_readable.csv`
 - `examples/output/bacteria_labeled_review/label_summary.csv`
 - `examples/output/bacteria_labeled_review/size_summary.csv`
+
+The `v1.5` review report includes the default F1-oriented result, a recall-oriented parameter set, and a precision-oriented parameter set for each image. This keeps high-recall probes visible without hiding their false-positive cost.
 
 ## Version Stages
 
