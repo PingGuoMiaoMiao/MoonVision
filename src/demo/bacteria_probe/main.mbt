@@ -180,7 +180,11 @@ fn roi_svg(width : Int, height : Int, roi : ProbeRoi) -> String {
 }
 
 fn preset_mask(contrasted : @image.GrayImage, preset : ProbePreset) -> @image.GrayImage {
-  let base = try! @ops.otsu_threshold(contrasted)
+  let base = if preset.name == "dark_adaptive_tight_expanded" {
+    try! @ops.adaptive_threshold_mean(contrasted, 5, 7)
+  } else {
+    try! @ops.otsu_threshold(contrasted)
+  }
   let thresholded = if preset.invert_mask {
     try! @ops.invert(base)
   } else {
@@ -606,6 +610,29 @@ fn presets() -> Array[ProbePreset] {
       reuse_previous_candidates: false,
       shrink_x100: 255,
       shrink_max_bbox_area: 80000,
+    },
+    {
+      name: "dark_adaptive_tight_expanded",
+      invert_mask: true,
+      brightness_delta: 10,
+      contrast_factor: 1.20,
+      roi_margin_divisor: 25,
+      roi_min_margin: 16,
+      roi_max_margin: 80,
+      open_radius: 0,
+      close_radius: 1,
+      min_area: 500,
+      max_area: 60000,
+      max_aspect_x100: 500,
+      min_fill_x1000: 20,
+      edge_margin: 8,
+      merge_gap: 0,
+      min_cluster_boxes: 0,
+      min_cluster_bbox_area: 0,
+      cluster_only: false,
+      reuse_previous_candidates: false,
+      shrink_x100: 220,
+      shrink_max_bbox_area: 11000,
     },
     {
       name: "dark_small_wide",
