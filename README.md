@@ -189,6 +189,7 @@ Outputs:
 
 - `examples/output/bacteria_labeled_review/index.html`
 - `examples/output/bacteria_labeled_review/summary_readable.csv`
+- `examples/output/bacteria_labeled_review/mode_summary.csv`
 - `examples/output/bacteria_labeled_review/label_summary.csv`
 - `examples/output/bacteria_labeled_review/size_summary.csv`
 

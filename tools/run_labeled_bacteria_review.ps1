@@ -333,6 +333,52 @@ function Get-StBarWidth {
   return [math]::Round($Value * 320.0 / $MaxValue, 1)
 }
 
+function Get-SummarySum {
+  param(
+    [object[]]$Items,
+    [string]$PropertyName
+  )
+
+  if ($Items.Count -le 0) {
+    return 0
+  }
+  $sum = ($Items | Measure-Object -Property $PropertyName -Sum).Sum
+  if ($null -eq $sum) {
+    return 0
+  }
+  return [int]$sum
+}
+
+function New-ModeSummaryItem {
+  param(
+    [string]$Mode,
+    [object[]]$Items,
+    [string]$MatchedProperty,
+    [string]$FalsePositiveProperty,
+    [string]$FalseNegativeProperty
+  )
+
+  $matched = Get-SummarySum -Items $Items -PropertyName $MatchedProperty
+  $falsePositive = Get-SummarySum -Items $Items -PropertyName $FalsePositiveProperty
+  $falseNegative = Get-SummarySum -Items $Items -PropertyName $FalseNegativeProperty
+  $labels = $matched + $falseNegative
+  $precision = if (($matched + $falsePositive) -gt 0) { [math]::Round($matched / ($matched + $falsePositive), 4) } else { 0.0 }
+  $recall = if ($labels -gt 0) { [math]::Round($matched / $labels, 4) } else { 0.0 }
+  $f1 = if (($precision + $recall) -gt 0) { [math]::Round(2.0 * $precision * $recall / ($precision + $recall), 4) } else { 0.0 }
+
+  [PSCustomObject]@{
+    Mode = $Mode
+    Images = $Items.Count
+    Labels = $labels
+    Matched = $matched
+    FalsePositive = $falsePositive
+    FalseNegative = $falseNegative
+    Precision = $precision
+    Recall = $recall
+    F1 = $f1
+  }
+}
+
 $pairs = Get-ChildItem -File -Recurse $InputRoot |
   Where-Object { $_.FullName -like ("*" + $bacteriaKeyword + "*") -and $_.Extension -eq ".png" } |
   Where-Object {
@@ -607,6 +653,30 @@ $sizeSummary |
   Export-Csv -LiteralPath (Join-Path $OutputRoot "size_summary.csv") -NoTypeInformation -Encoding UTF8
 
 $imageCount = $summary.Count
+$modeSummary = @(
+  New-ModeSummaryItem `
+    -Mode "F1-oriented" `
+    -Items $summary `
+    -MatchedProperty "MatchedCount" `
+    -FalsePositiveProperty "FalsePositiveCount" `
+    -FalseNegativeProperty "FalseNegativeCount"
+  New-ModeSummaryItem `
+    -Mode "Recall-oriented" `
+    -Items $summary `
+    -MatchedProperty "RecallMatchedCount" `
+    -FalsePositiveProperty "RecallFalsePositiveCount" `
+    -FalseNegativeProperty "RecallFalseNegativeCount"
+  New-ModeSummaryItem `
+    -Mode "Precision-oriented" `
+    -Items $summary `
+    -MatchedProperty "PrecisionMatchedCount" `
+    -FalsePositiveProperty "PrecisionFalsePositiveCount" `
+    -FalseNegativeProperty "PrecisionFalseNegativeCount"
+)
+
+$modeSummary |
+  Export-Csv -LiteralPath (Join-Path $OutputRoot "mode_summary.csv") -NoTypeInformation -Encoding UTF8
+
 $avgMatched = if ($imageCount -gt 0) { [math]::Round((($summary | Measure-Object -Property MatchedCount -Average).Average), 2) } else { 0 }
 $avgFp = if ($imageCount -gt 0) { [math]::Round((($summary | Measure-Object -Property FalsePositiveCount -Average).Average), 2) } else { 0 }
 $avgFn = if ($imageCount -gt 0) { [math]::Round((($summary | Measure-Object -Property FalseNegativeCount -Average).Average), 2) } else { 0 }
@@ -651,6 +721,9 @@ $labelRows = foreach ($item in $labelSummary) {
 $sizeRows = foreach ($item in $sizeSummary) {
   "<tr><td>$([System.Security.SecurityElement]::Escape($item.SizeBucket))</td><td>$($item.AreaMin)</td><td>$($item.AreaMax)</td><td>$($item.TotalAnnotations)</td><td>$($item.MatchedAnnotations)</td><td>$($item.UnmatchedAnnotations)</td><td>$($item.Recall)</td></tr>"
 }
+$modeRows = foreach ($item in $modeSummary) {
+  "<tr><td>$([System.Security.SecurityElement]::Escape($item.Mode))</td><td>$($item.Images)</td><td>$($item.Labels)</td><td>$($item.Matched)</td><td>$($item.FalsePositive)</td><td>$($item.FalseNegative)</td><td>$($item.Precision)</td><td>$($item.Recall)</td><td>$($item.F1)</td></tr>"
+}
 
 $index = @"
 <!doctype html>
@@ -692,7 +765,7 @@ $index = @"
 <body>
   <h1>MoonVision Bacteria Labeled Review</h1>
   <p class="note">Input root: $([System.Security.SecurityElement]::Escape($InputRoot))</p>
-  <p class="note">IoU match threshold: $minIou | Readable CSV: <a href="summary_readable.csv">summary_readable.csv</a> | Raw CSV: <a href="summary.csv">summary.csv</a> | Label CSV: <a href="label_summary.csv">label_summary.csv</a> | Size CSV: <a href="size_summary.csv">size_summary.csv</a></p>
+  <p class="note">IoU match threshold: $minIou | Readable CSV: <a href="summary_readable.csv">summary_readable.csv</a> | Raw CSV: <a href="summary.csv">summary.csv</a> | Mode CSV: <a href="mode_summary.csv">mode_summary.csv</a> | Label CSV: <a href="label_summary.csv">label_summary.csv</a> | Size CSV: <a href="size_summary.csv">size_summary.csv</a></p>
 
   <div class="cards">
     <div class="card"><div class="label">Images</div><div class="value">$imageCount</div></div>
@@ -711,6 +784,29 @@ $index = @"
       $scatterSvg
     </div>
   </div>
+
+  <div class="section">
+    <h2>Review Mode Summary</h2>
+    <p class="note">F1-oriented is the default view. Recall-oriented keeps the highest-recall route visible, while precision-oriented shows the lowest-noise route for each image.</p>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>Mode</th>
+        <th>Images</th>
+        <th>Labels</th>
+        <th>Matched</th>
+        <th>False Positive</th>
+        <th>False Negative</th>
+        <th>Precision</th>
+        <th>Recall</th>
+        <th>F1</th>
+      </tr>
+    </thead>
+    <tbody>
+      $($modeRows -join "`n      ")
+    </tbody>
+  </table>
 
   <div class="section">
     <h2>Matched / False Positive / False Negative</h2>
