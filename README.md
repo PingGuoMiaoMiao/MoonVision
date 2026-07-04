@@ -179,6 +179,12 @@ For quick validation during parameter tuning, restrict the run to specific sampl
 powershell -NoProfile -ExecutionPolicy Bypass -File tools/run_labeled_bacteria_review.ps1 -SampleFolders 346
 ```
 
+Exclude duplicated `rename` folders when checking the original reviewed images:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File tools/run_labeled_bacteria_review.ps1 -SampleFolders 346 -ExcludeRenameCopies
+```
+
 Or cap the number of reviewed images:
 
 ```powershell
@@ -208,11 +214,11 @@ The `v1.5` review report includes the default F1-oriented result, a recall-orien
 - `v1.4`
   Extends the contour layer into lightweight shape analysis with contour approximation, convex hull extraction, minimum-area rotated rectangles, and descriptor helpers.
 - `v1.5`
-  Focuses on the labeled bacteria-review path: a tighter preset set, a large-lesion cluster route, native executable reuse during batch review, and richer recall reporting by label and size bucket.
+  Focuses on the labeled bacteria-review path: high-recall probe routes, native executable reuse during batch review, quick sample filtering, and multi-mode reporting by F1, recall, and precision.
 
-## v1.0 vs v1.1 vs v1.2 vs v1.3 vs v1.4
+## v1.0 vs v1.1 vs v1.2 vs v1.3 vs v1.4 vs v1.5
 
-The bundled demo assets are kept stable so `v1.0`, `v1.1`, `v1.2`, `v1.3`, and `v1.4` remain directly comparable.
+The bundled demo assets are kept stable so `v1.0`, `v1.1`, `v1.2`, `v1.3`, and `v1.4` remain directly comparable. `v1.5` adds a labeled-review workflow for local annotated bacteria images, so its review metrics depend on the local `C:\Users\chen\Desktop\打标` dataset.
 
 - Object counting:
   `v1.0` used `threshold(120)` and detected `5` objects on the bundled asset.
@@ -226,6 +232,36 @@ The bundled demo assets are kept stable so `v1.0`, `v1.1`, `v1.2`, `v1.3`, and `
 - Document enhancement:
   `v1.0` used a fixed threshold after brightness and contrast adjustment.
   `v1.1` preserves the `v1.0` output in `document_enhancement_output_v1_0.png` and writes the optimized `median_blur -> adaptive_threshold_mean` result to `document_enhancement_output.png`.
+- Bacteria labeled review:
+  `v1.5` keeps all core library APIs unchanged and extends the demo layer with batch review, per-preset scoring, best-alignment overlays, label and size summaries, and mode-level comparison across F1-oriented, recall-oriented, and precision-oriented selections.
+
+## v1.5 Review Validation
+
+Quick script validation without a full batch run:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File tools/run_labeled_bacteria_review.ps1 -SampleFolders 346
+```
+
+Original-image-only validation:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File tools/run_labeled_bacteria_review.ps1 -SampleFolders 346 -ExcludeRenameCopies
+```
+
+Small smoke run:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File tools/run_labeled_bacteria_review.ps1 -MaxImages 3
+```
+
+Full labeled review:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File tools/run_labeled_bacteria_review.ps1 -ForceRerun
+```
+
+Use `mode_summary.csv` for the shortest top-level comparison, `summary_readable.csv` for per-image details, and each sample's `preset_scores.csv` for parameter-level debugging.
 
 ## Testing Scope
 

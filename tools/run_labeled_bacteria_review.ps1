@@ -2,6 +2,7 @@ param(
   [string]$InputRoot = (Join-Path $env:USERPROFILE ("Desktop\" + [char]0x6253 + [char]0x6807)),
   [string]$OutputRoot = "C:\Users\chen\Desktop\MoonVision\examples\output\bacteria_labeled_review",
   [bool]$ExcludeSideViews = $true,
+  [switch]$ExcludeRenameCopies,
   [string[]]$SampleFolders = @(),
   [int]$MaxImages = 0,
   [switch]$ForceRerun
@@ -387,6 +388,12 @@ $pairs = Get-ChildItem -File -Recurse $InputRoot |
     }
     $parentLeaf = Split-Path -Leaf (Split-Path -Parent $_.FullName)
     return $parentLeaf -notlike "side*"
+  } |
+  Where-Object {
+    if (-not $ExcludeRenameCopies) {
+      return $true
+    }
+    return $_.FullName -notlike "*rename*"
   } |
   ForEach-Object {
     $jsonPath = [System.IO.Path]::ChangeExtension($_.FullName, ".json")
