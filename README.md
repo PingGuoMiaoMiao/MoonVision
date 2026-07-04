@@ -263,6 +263,37 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools/run_labeled_bacteria_r
 
 Use `mode_summary.csv` for the shortest top-level comparison, `summary_readable.csv` for per-image details, and each sample's `preset_scores.csv` for parameter-level debugging.
 
+## Final Verification Checklist
+
+Run the core checks:
+
+```powershell
+moon check
+moon test
+```
+
+Run the bundled visual demos:
+
+```powershell
+moon run src/demo/object_counting
+moon run src/demo/edge_detection
+moon run src/demo/document_enhancement
+```
+
+Expected bundled demo reports:
+
+- `examples/output/object_counting_report.html`
+- `examples/output/edge_detection_report.html`
+- `examples/output/document_enhancement_report.html`
+
+Run the bacteria review workflow against local labeled data:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File tools/run_labeled_bacteria_review.ps1 -SampleFolders 346 -ExcludeRenameCopies
+```
+
+Use `-ForceRerun` only when regenerating the full labeled review from the source images.
+
 ## Testing Scope
 
 Current tests cover:
