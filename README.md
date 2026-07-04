@@ -2,7 +2,7 @@
 
 MoonVision is a MoonBit-native lightweight image processing and basic computer vision library.
 
-The current `v1.4` line focuses on:
+The current `v1.5` line includes the core lightweight image-processing library:
 
 - flat image containers: `GrayImage`, `RgbImage`
 - PNG decode to `RgbImage` through a vendored adapter layer
@@ -14,12 +14,12 @@ The current `v1.4` line focuses on:
 - connected components, contour hierarchy, contour statistics, shape analysis, and bounding boxes
 - visual export: PNG bytes, SVG overlays, HTML reports
 
-The current `v1.5` bacteria-review line extends the demo layer with:
+The `v1.5` bacteria-review workflow extends the demo layer with:
 
 - a lightweight bacteria probe under `src/demo/bacteria_probe`
 - a large-lesion clustering route derived from dark binary candidates
 - a labeled-review script that rebuilds one native executable and reuses it across a batch
-- label-level and size-bucket recall summaries for the current annotated bacteria set
+- label-level, size-bucket, and review-mode summaries for the current annotated bacteria set
 
 ## Module Layout
 
