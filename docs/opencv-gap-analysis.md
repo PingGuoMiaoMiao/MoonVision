@@ -370,3 +370,29 @@ MoonVision 并不是 OpenCV 的移植，也不试图复刻完整 OpenCV。
 - OpenCV Documentation: https://opencv-opencv.mintlify.app/
 - OpenCV imgproc tutorial table: https://docs.opencv.org/4.x/d7/da8/tutorial_table_of_content_imgproc.html
 - OpenCV imgproc API topics: https://docs.opencv.org/4.x/d7/dbd/group__imgproc.html
+
+## v2.0 Update
+
+MoonVision `v2.0` reduces several lightweight `imgproc` gaps identified in the original analysis:
+
+- Added grayscale histogram, cumulative histogram, normalized histogram, and histogram equalization.
+- Added binary morphology gradient, top hat, black hat, iteration control, and square/cross structuring elements.
+- Added Manhattan distance transform for binary masks.
+- Added lightweight Hough line detection for binary edge maps.
+- Added grayscale template matching with sum of absolute differences.
+- Added bilinear resize for `GrayImage`.
+
+After `v2.0`, MoonVision is still not a full OpenCV replacement. The project remains a MoonBit-native lightweight image-processing library. Compared with OpenCV `imgproc`, the main remaining gaps are still:
+
+- full color-space conversion;
+- RGB/HSV histogram analysis;
+- affine and perspective transforms;
+- remap and image pyramids;
+- Hough circle detection;
+- watershed;
+- Euclidean distance transform;
+- image moments and Hu moments;
+- shape matching;
+- a full drawing API.
+
+The recommended next direction after `v2.0` is to stabilize documentation and validation first. If another feature version is needed, the next practical additions should be affine/perspective transforms, moments, or Hough circle detection, not video, GUI, DNN, or OpenCV binding.
