@@ -127,3 +127,30 @@ test "gray transforms resize flip and rotate predictably" {
     content="[b'\\x02', b'\\x04', b'\\x06', b'\\x01', b'\\x03', b'\\x05']",
   )
 }
+
+///|
+test "bilinear resize preserves dimensions and interpolates values" {
+  let img = try! gray_from_array(
+    2,
+    2,
+    [b'\x00', b'\x64', b'\x96', b'\xfa'],
+  )
+  let same = try! resize_bilinear(img, 2, 2)
+  inspect(same.to_array(), content="[b'\\x00', b'\\x64', b'\\x96', b'\\xFA']")
+
+  let resized = try! resize_bilinear(img, 3, 3)
+  inspect(
+    resized.to_array(),
+    content="[b'\\x00', b'\\x32', b'\\x64', b'\\x4B', b'\\x7D', b'\\xAF', b'\\x96', b'\\xC8', b'\\xFA']",
+  )
+}
+
+///|
+test "bilinear resize rejects invalid dimensions" {
+  let img = try! gray(2, 2)
+  let err = try? resize_bilinear(img, 0, 2)
+  inspect(
+    err,
+    content="Err(InvalidDimensions(\"resize width and height must both be greater than zero\"))",
+  )
+}
