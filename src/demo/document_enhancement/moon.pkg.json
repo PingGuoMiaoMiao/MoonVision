@@ -18,6 +18,10 @@
       "alias": "image"
     },
     {
+      "path": "PingGuoMiaoMiao/MoonVision/histogram",
+      "alias": "histogram"
+    },
+    {
       "path": "PingGuoMiaoMiao/MoonVision/morphology",
       "alias": "morphology"
     },

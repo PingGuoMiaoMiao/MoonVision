@@ -17,19 +17,25 @@ fn main {
   let baseline_thresholded = try! @ops.threshold(contrasted, 150)
   let baseline_opened = try! @morphology.open_binary(baseline_thresholded, radius=1)
   let baseline_enhanced = try! @morphology.close_binary(baseline_opened, radius=1)
+  let equalized = try! @histogram.equalize_histogram(contrasted)
   let denoised = try! @filter.median_blur(contrasted, radius=1)
   let adaptive = try! @ops.adaptive_threshold_mean(denoised, 5, 7)
   let opened = try! @morphology.open_binary(adaptive, radius=1)
   let enhanced = try! @morphology.close_binary(opened, radius=1)
+  let resized = try! @image.resize_bilinear(enhanced, enhanced.width() * 2, enhanced.height() * 2)
 
   let input_name = "document_enhancement_input.png"
   let baseline_name = "document_enhancement_output_v1_0.png"
+  let equalized_name = "document_enhancement_equalized_v2_0.png"
   let output_name = "document_enhancement_output.png"
+  let resized_name = "document_enhancement_resized_v2_0.png"
   let report_name = "document_enhancement_report.html"
 
   write_rgb_png(output_dir + input_name, input)
   write_gray_png(output_dir + baseline_name, baseline_enhanced)
+  write_gray_png(output_dir + equalized_name, equalized)
   write_gray_png(output_dir + output_name, enhanced)
+  write_gray_png(output_dir + resized_name, resized)
   try! @demoio.write_string_to_file(
     output_dir + report_name,
     @export.html_report(
@@ -37,14 +43,17 @@ fn main {
       [
         "v1.0 pipeline: grayscale -> brightness -> contrast -> threshold(150) -> opening -> closing",
         "v1.1 pipeline: grayscale -> brightness -> contrast -> median blur(radius=1) -> adaptive threshold mean(block=5, c=7) -> opening -> closing",
+        "v2.0 additions: histogram equalization preview and bilinear resize output",
         "input asset: " + asset_path,
         "input size: " + input.width().to_string() + "x" + input.height().to_string(),
-        "comparison: v1.0 fixed threshold output is preserved alongside the optimized v1.1 output",
+        "comparison: v1.0 fixed threshold output is preserved alongside the optimized v1.1 output and v2.0 preprocessing outputs",
       ],
       [
         @export.report_image("input asset", input_name),
         @export.report_image("v1.0 enhanced document", baseline_name),
+        @export.report_image("v2.0 histogram equalized preview", equalized_name),
         @export.report_image("v1.1 enhanced document", output_name),
+        @export.report_image("v2.0 bilinear resized document", resized_name),
       ],
     ),
   )
