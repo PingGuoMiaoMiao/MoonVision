@@ -539,3 +539,78 @@ test "contour descriptors stay finite on fixed fixtures" {
   let notch = (try! find_contours(contour_notch_fixture()))[0]
   inspect(double_close(contour_solidity(notch), 0.8888888888888888, 0.001), content="true")
 }
+
+///|
+test "manhattan distance transform handles empty and isolated foreground" {
+  let empty = try! @image.gray(3, 3)
+  let empty_distance = try! distance_transform_manhattan(empty)
+  inspect(empty_distance.to_array(), content="[b'\\x00', b'\\x00', b'\\x00', b'\\x00', b'\\x00', b'\\x00', b'\\x00', b'\\x00', b'\\x00']")
+  inspect(try! max_distance(empty_distance), content="0")
+
+  let single = try! @image.gray_from_array(
+    3,
+    3,
+    [
+      b'\x00',
+      b'\x00',
+      b'\x00',
+      b'\x00',
+      b'\xff',
+      b'\x00',
+      b'\x00',
+      b'\x00',
+      b'\x00',
+    ],
+  )
+  let single_distance = try! distance_transform_manhattan(single)
+  inspect(try! single_distance.get(1, 1), content="b'\\x01'")
+  inspect(try! max_distance(single_distance), content="1")
+}
+
+///|
+test "manhattan distance transform grows toward rectangle center" {
+  let rect = try! @image.gray_from_array(
+    5,
+    5,
+    [
+      b'\x00',
+      b'\x00',
+      b'\x00',
+      b'\x00',
+      b'\x00',
+      b'\x00',
+      b'\xff',
+      b'\xff',
+      b'\xff',
+      b'\x00',
+      b'\x00',
+      b'\xff',
+      b'\xff',
+      b'\xff',
+      b'\x00',
+      b'\x00',
+      b'\xff',
+      b'\xff',
+      b'\xff',
+      b'\x00',
+      b'\x00',
+      b'\x00',
+      b'\x00',
+      b'\x00',
+      b'\x00',
+    ],
+  )
+  let distance = try! distance_transform_manhattan(rect)
+  inspect(try! distance.get(1, 1), content="b'\\x01'")
+  inspect(try! distance.get(2, 2), content="b'\\x02'")
+  inspect(try! max_distance(distance), content="2")
+}
+
+///|
+test "manhattan distance transform treats outside image as background" {
+  let full = try! @image.gray(3, 3, fill=b'\xff')
+  let distance = try! distance_transform_manhattan(full)
+  inspect(try! distance.get(0, 0), content="b'\\x01'")
+  inspect(try! distance.get(1, 1), content="b'\\x02'")
+  inspect(try! distance.get(2, 2), content="b'\\x01'")
+}
