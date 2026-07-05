@@ -29,15 +29,17 @@ MoonVision 聚焦算法层能力，计划提供从基础图像矩阵操作到边
 
 - **图像矩阵操作**：提供 `GrayImage`、`RgbImage` 等基础图像结构，支持尺寸信息、像素访问和像素修改；
 - **基础图像处理**：支持灰度化、二值化、反转、亮度调整和对比度调整；
-- **卷积滤波**：支持 Box Blur、Gaussian Blur、Sharpen 等常见滤波操作；
-- **边缘检测**：支持 Sobel X/Y、梯度幅值计算和基础边缘提取；
+- **卷积与邻域滤波**：支持 Box Blur、Gaussian Blur、Sharpen、Median Blur 等常见滤波操作；
+- **边缘检测**：支持 Sobel X/Y、梯度幅值计算、基础边缘提取和 Canny 边缘检测；
 - **形态学操作**：支持 Erosion、Dilation、Opening、Closing；
-- **连通域分析**：支持 Connected Components，并提供 Bounding Boxes、面积过滤和目标计数；
+- **连通域与轮廓分析**：支持 Connected Components、Contours、Contour Hierarchy，并提供 Bounding Boxes、面积过滤、轮廓统计、形状描述和目标计数；
+- **基础几何变换**：支持灰度图缩放、水平翻转、垂直翻转和 90 度旋转；
 - **可视化输出**：支持将处理结果导出为 PNG、SVG 或 HTML 报告；
 - **Demo 示例**：
   - 物体计数，例如圆点、硬币、方块、细胞等目标计数；
   - 边缘检测，将输入图像转换为轮廓图；
-  - 文档扫描增强，包括黑白化、去噪和基础增强处理。
+  - 文档扫描增强，包括黑白化、去噪和基础增强处理；
+  - 标注图像复核，例如针对本地标注数据生成检测框、统计报表和 HTML 可视化报告。
 
 ---
 
@@ -80,6 +82,15 @@ MoonVision 聚焦算法层能力，计划提供从基础图像矩阵操作到边
 - **v1.2：边缘与轮廓扩展阶段**  
   进一步扩展 Canny 边缘检测、轮廓提取、轮廓统计等能力，使项目从基础视觉分析能力向更完整的轻量级 `imgproc` 算法层推进。
 
+- **v1.3：轮廓层级与结构化分析阶段**  
+  继续完善轮廓语义，支持外轮廓、孔洞轮廓和层级关系表达，使轮廓结果能够服务于更复杂的区域分析与可视化展示。
+
+- **v1.4：形状分析与描述子阶段**  
+  在轮廓基础上补充近似多边形、凸包、旋转外接矩形、圆度、实心度等轻量级形状分析能力，提升 MoonVision 在基础目标分析场景中的表达能力。
+
+- **v1.5：标注复核与最终展示阶段**  
+  面向比赛评审与实际样例展示，补充标注数据批量复核、检测参数评分、F1 / Recall / Precision 多口径报告、标签统计、尺寸分桶统计和 HTML 报告输出，使算法库具备更完整的演示与验证闭环。
+
 - **v2.0：轻量级 imgproc 扩展阶段**  
   继续补充轮廓分析增强、几何矫正、直方图增强等能力，逐步形成面向 MoonBit 生态的轻量级图像处理与基础计算机视觉算法库。
 
@@ -95,63 +106,70 @@ moonvision/
 
   src/
     image/
-      moon.pkg
+      moon.pkg.json
       gray.mbt
       rgb.mbt
       codec.mbt
+      transform.mbt
 
     ops/
-      moon.pkg
+      moon.pkg.json
       grayscale.mbt
       threshold.mbt
+      otsu.mbt
+      adaptive_threshold.mbt
       invert.mbt
       brightness.mbt
       contrast.mbt
       ops_test.mbt
 
     filter/
-      moon.pkg
+      moon.pkg.json
       convolution.mbt
       box.mbt
       gaussian.mbt
+      median.mbt
       sharpen.mbt
       filter_test.mbt
 
     edge/
-      moon.pkg
+      moon.pkg.json
       sobel.mbt
-      gradient.mbt
+      canny.mbt
       edge_test.mbt
 
     morphology/
-      moon.pkg
-      erosion.mbt
-      dilation.mbt
-      opening.mbt
-      closing.mbt
+      moon.pkg.json
+      binary.mbt
       morphology_test.mbt
 
     components/
-      moon.pkg
+      moon.pkg.json
       connected_components.mbt
-      bounding_box.mbt
+      contours.mbt
       components_test.mbt
 
     export/
-      moon.pkg
-      svg_overlay.mbt
-      html_report.mbt
+      moon.pkg.json
+      png.mbt
+      report.mbt
 
     demo/
       object_counting/
-        moon.pkg
+        moon.pkg.json
         main.mbt
       edge_detection/
-        moon.pkg
+        moon.pkg.json
         main.mbt
       document_enhancement/
-        moon.pkg
+        moon.pkg.json
         main.mbt
+      bacteria_probe/
+        moon.pkg.json
+        main.mbt
+
+  tools/
+    run_labeled_bacteria_review.ps1
 
   examples/
     assets/
@@ -216,6 +234,59 @@ bounding boxes: [...coordinates...]
 用途：
 
 > 可用于 OCR 前处理、扫描件增强、拍照文档清晰化等场景。
+
+---
+
+### 4. 标注图像复核
+
+输入本地已标注图像和对应标注文件，经过以下处理流程：
+
+```text
+批量读取图像与标注 -> 多参数检测 -> IoU 匹配 -> F1 / Recall / Precision 多口径评分 -> HTML 报告
+```
+
+输出内容包括：
+
+- 每张图像的最佳检测参数；
+- 检测框、标注框和匹配结果可视化；
+- 标签维度统计、尺寸分桶统计和模式汇总统计；
+- 便于评审查看的 `summary_readable.csv`、`mode_summary.csv` 和 `index.html`。
+
+该 demo 可用于展示 MoonVision 在实际标注数据复核、检测流程调参和可视化报告生成方面的扩展能力。
+
+---
+
+## 最终验收方式
+
+项目最终提交前使用以下命令进行基础验证：
+
+```powershell
+moon check
+moon test
+moon run src/demo/object_counting
+moon run src/demo/edge_detection
+moon run src/demo/document_enhancement
+```
+
+对于本地标注数据复核场景，可使用以下命令进行快速验证：
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File tools/run_labeled_bacteria_review.ps1 -SampleFolders 346 -ExcludeRenameCopies
+```
+
+完整复核时可使用：
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File tools/run_labeled_bacteria_review.ps1 -ForceRerun
+```
+
+项目验收重点包括：
+
+- MoonBit 原生测试通过；
+- 三个基础 demo 可运行并生成 HTML / PNG / SVG 输出；
+- 标注图像复核脚本可生成 CSV 与 HTML 报告；
+- README、LICENSE、申报书和仓库元信息保持一致；
+- 不将本地生成的大量输出图片、CSV 或 HTML 结果纳入仓库提交。
 
 ---
 

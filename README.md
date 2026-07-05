@@ -218,7 +218,7 @@ The `v1.5` review report includes the default F1-oriented result, a recall-orien
 
 ## v1.0 vs v1.1 vs v1.2 vs v1.3 vs v1.4 vs v1.5
 
-The bundled demo assets are kept stable so `v1.0`, `v1.1`, `v1.2`, `v1.3`, and `v1.4` remain directly comparable. `v1.5` adds a labeled-review workflow for local annotated bacteria images, so its review metrics depend on the local `C:\Users\chen\Desktop\打标` dataset.
+The bundled demo assets are kept stable so `v1.0`, `v1.1`, `v1.2`, `v1.3`, and `v1.4` remain directly comparable. `v1.5` adds a labeled-review workflow for local annotated bacteria images, so its review metrics depend on the dataset selected by the script's `InputRoot` parameter.
 
 - Object counting:
   `v1.0` used `threshold(120)` and detected `5` objects on the bundled asset.
@@ -317,4 +317,4 @@ Current tests cover:
 
 ## License
 
-MoonVision is released under the `MIT` license. See [LICENSE](/C:/Users/chen/Desktop/MoonVision/LICENSE) for the full text.
+MoonVision is released under the `MIT` license. See [LICENSE](LICENSE) for the full text.
