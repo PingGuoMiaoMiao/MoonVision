@@ -298,6 +298,7 @@ test "contour descriptors stay finite on fixed fixtures" {
 }
 
 ///|
+#warnings("-deprecated")
 test "manhattan distance transform handles empty and isolated foreground" {
   let empty = try! @image.gray(3, 3)
   let empty_distance = try! distance_transform_manhattan(empty)

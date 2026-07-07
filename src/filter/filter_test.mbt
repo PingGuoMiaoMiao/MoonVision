@@ -6,6 +6,7 @@ fn sample_gray() -> @image.GrayImage {
 }
 
 ///|
+#warnings("-deprecated")
 test "convolve identity kernel keeps pixels unchanged" {
   let kernel = try! int_kernel(1, 1, [1])
   let out = try! convolve(sample_gray(), kernel)
@@ -28,6 +29,7 @@ test "convolve identity kernel keeps pixels unchanged" {
 }
 
 ///|
+#warnings("-deprecated")
 test "box blur uses border copy and preserves size" {
   let out = try! box_blur(sample_gray(), radius=1)
   inspect(out.width(), content="3")
@@ -51,6 +53,7 @@ test "box blur uses border copy and preserves size" {
 }
 
 ///|
+#warnings("-deprecated")
 test "gaussian blur and sharpen behave on simple inputs" {
   let gaussian = try! gaussian_blur(sample_gray(), radius=1)
   let sharpened = try! sharpen(gaussian)
@@ -89,6 +92,7 @@ test "gaussian blur and sharpen behave on simple inputs" {
 }
 
 ///|
+#warnings("-deprecated")
 test "median blur removes isolated salt noise" {
   let noisy = try! @image.gray_from_array(3, 3, [
     b'\x32', b'\x32', b'\x32', b'\x32', b'\xff', b'\x32', b'\x32', b'\x32', b'\x32',

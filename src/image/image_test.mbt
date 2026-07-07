@@ -85,6 +85,7 @@ fn fixture_png_2x2() -> Bytes {
 }
 
 ///|
+#warnings("-deprecated")
 test "png decoding adapts RGBA data to rgb image" {
   let img = try! rgb_from_png_bytes(fixture_png_2x2())
   inspect(img.width(), content="2")
@@ -118,6 +119,7 @@ fn transform_fixture_gray() -> GrayImage {
 }
 
 ///|
+#warnings("-deprecated")
 test "gray transforms resize flip and rotate predictably" {
   let img = transform_fixture_gray()
   let resized = try! resize_nearest(img, 4, 3)
@@ -199,6 +201,7 @@ test "gray transforms resize flip and rotate predictably" {
 }
 
 ///|
+#warnings("-deprecated")
 test "bilinear resize preserves dimensions and interpolates values" {
   let img = try! gray_from_array(2, 2, [b'\x00', b'\x64', b'\x96', b'\xfa'])
   let same = try! resize_bilinear(img, 2, 2)

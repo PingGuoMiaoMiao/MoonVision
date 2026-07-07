@@ -17,6 +17,7 @@ test "sobel x detects vertical edge and sobel y stays flat" {
 }
 
 ///|
+#warnings("-deprecated")
 test "gradient magnitude and edge extract produce edge map" {
   let magnitude = try! gradient_magnitude(vertical_step())
   let edges = try! edge_extract(vertical_step(), threshold=200)
@@ -87,6 +88,7 @@ test "gradient magnitude and edge extract produce edge map" {
 }
 
 ///|
+#warnings("-deprecated")
 test "canny edges extract a thin binary edge map" {
   let edges = try! canny_edges(vertical_step(), 64, 128)
   @debug.inspect(

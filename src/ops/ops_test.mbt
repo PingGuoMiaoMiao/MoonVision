@@ -1,4 +1,5 @@
 ///|
+#warnings("-deprecated")
 test "grayscale converts rgb image" {
   let rgb = try! @image.rgb_from_array(2, 1, [
     b'\xff', b'\x00', b'\x00', b'\x00', b'\xff', b'\x00',
@@ -8,6 +9,7 @@ test "grayscale converts rgb image" {
 }
 
 ///|
+#warnings("-deprecated")
 test "threshold creates binary image" {
   let img = try! @image.gray_from_array(4, 1, [
     b'\x20', b'\x7f', b'\x80', b'\xff',
@@ -17,6 +19,7 @@ test "threshold creates binary image" {
 }
 
 ///|
+#warnings("-deprecated")
 test "otsu threshold splits bimodal grayscale image" {
   let img = try! @image.gray_from_array(6, 1, [
     b'\x0a', b'\x0b', b'\x0c', b'\xc8', b'\xc9', b'\xca',
@@ -38,6 +41,7 @@ test "otsu threshold splits bimodal grayscale image" {
 }
 
 ///|
+#warnings("-deprecated")
 test "adaptive threshold handles local shading around dark pixels" {
   let img = try! @image.gray_from_array(3, 3, [
     b'\x64', b'\x78', b'\x8c', b'\x64', b'\x3c', b'\x8c', b'\x64', b'\x78', b'\x8c',
@@ -62,6 +66,7 @@ test "adaptive threshold handles local shading around dark pixels" {
 }
 
 ///|
+#warnings("-deprecated")
 test "invert and brightness are composable" {
   let img = try! @image.gray_from_array(3, 1, [b'\x00', b'\x40', b'\xff'])
   let inverted = try! invert(img)
