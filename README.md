@@ -211,11 +211,14 @@ Outputs:
 
 - `examples/output/bacteria_labeled_review/index.html`
 - `examples/output/bacteria_labeled_review/summary_readable.csv`
+- `examples/output/bacteria_labeled_review/review_focus.csv`
+- `examples/output/bacteria_labeled_review/param_summary.csv`
+- `examples/output/bacteria_labeled_review/review_category_summary.csv`
 - `examples/output/bacteria_labeled_review/mode_summary.csv`
 - `examples/output/bacteria_labeled_review/label_summary.csv`
 - `examples/output/bacteria_labeled_review/size_summary.csv`
 
-The `v1.5` review report includes the default F1-oriented result, a recall-oriented parameter set, and a precision-oriented parameter set for each image. This keeps high-recall probes visible without hiding their false-positive cost.
+The `v1.5` review report includes the default F1-oriented result, a recall-oriented parameter set, and a precision-oriented parameter set for each image. The review dashboard also writes direct tuning views: `review_focus.csv` groups each image into clean-match, under-detected, over-detected, or mixed miss/noise buckets; `param_summary.csv` ranks probe presets across the selected image set; `review_category_summary.csv` summarizes where the current detector still needs tuning.
 
 ## Version Stages
 
@@ -281,7 +284,7 @@ Full labeled review:
 powershell -NoProfile -ExecutionPolicy Bypass -File tools/run_labeled_bacteria_review.ps1 -ForceRerun
 ```
 
-Use `mode_summary.csv` for the shortest top-level comparison, `summary_readable.csv` for per-image details, and each sample's `preset_scores.csv` for parameter-level debugging.
+Use `mode_summary.csv` for the shortest top-level comparison, `review_focus.csv` for deciding which images need manual inspection, `param_summary.csv` for preset-level tuning, `summary_readable.csv` for per-image details, and each sample's `preset_scores.csv` for parameter-level debugging.
 
 ## Final Verification Checklist
 
