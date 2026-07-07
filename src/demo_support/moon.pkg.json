@@ -9,6 +9,10 @@
     "io_native.mbt": [
       "native",
       "llvm"
+    ],
+    "io_wasm.mbt": [
+      "wasm",
+      "wasm-gc"
     ]
   }
 }
