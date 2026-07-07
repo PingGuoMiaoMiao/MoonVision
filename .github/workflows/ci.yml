@@ -25,8 +25,23 @@ jobs:
       - name: moon fmt --deny-warn
         run: moon check --fmt -d
 
+      - name: moon fmt --check
+        run: moon fmt --check
+
       - name: moon info --deny-warn
         run: moon info
 
       - name: moon test
         run: moon test -d
+
+      - name: run object counting demo
+        run: moon run src/demo/object_counting
+
+      - name: run edge detection demo
+        run: moon run src/demo/edge_detection
+
+      - name: run document enhancement demo
+        run: moon run src/demo/document_enhancement
+
+      - name: git diff --exit-code
+        run: git diff --exit-code
