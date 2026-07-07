@@ -4,14 +4,14 @@ struct BoundingBox {
   y : Int
   width : Int
   height : Int
-} derive(Eq, Show)
+} derive(Eq)
 
 ///|
 struct Component {
   label_id : Int
   bbox : BoundingBox
   area : Int
-} derive(Eq, Show)
+} derive(Eq)
 
 ///|
 fn find_root(parents : Array[Int], label : Int) -> Int {

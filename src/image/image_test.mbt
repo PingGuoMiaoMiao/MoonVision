@@ -10,7 +10,13 @@ test "gray image construction and pixel access" {
 ///|
 test "gray image rejects bad buffer length" {
   let err = try? gray_from_array(2, 2, [b'\x01'])
-  inspect(err, content="Err(InvalidBufferLength(4, 1))")
+  inspect(
+    match err {
+      Err(InvalidBufferLength(expected, actual)) => expected == 4 && actual == 1
+      _ => false
+    },
+    content="true",
+  )
 }
 
 ///|
@@ -139,7 +145,11 @@ test "bilinear resize rejects invalid dimensions" {
   let img = try! gray(2, 2)
   let err = try? resize_bilinear(img, 0, 2)
   inspect(
-    err,
-    content="Err(InvalidDimensions(\"resize width and height must both be greater than zero\"))",
+    match err {
+      Err(InvalidDimensions(message)) =>
+        message == "resize width and height must both be greater than zero"
+      _ => false
+    },
+    content="true",
   )
 }

@@ -3,7 +3,7 @@ struct HoughLine {
   rho : Int
   theta_bucket : Int
   votes : Int
-} derive(Eq, Show)
+} derive(Eq)
 
 ///|
 fn hough_line(rho : Int, theta_bucket : Int, votes : Int) -> HoughLine {

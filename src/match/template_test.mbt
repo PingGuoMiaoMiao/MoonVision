@@ -19,8 +19,12 @@ test "sad template matching rejects oversized templates" {
   let template = try! @image.gray(3, 2)
   let err = try? match_template_sad(source, template)
   inspect(
-    err,
-    content="Err(InvalidDimensions(\"template must not be larger than source image\"))",
+    match err {
+      Err(@image.InvalidDimensions(message)) =>
+        message == "template must not be larger than source image"
+      _ => false
+    },
+    content="true",
   )
 }
 

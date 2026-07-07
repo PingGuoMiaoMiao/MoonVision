@@ -3,7 +3,7 @@ struct TemplateMatch {
   x : Int
   y : Int
   score : Int
-} derive(Eq, Show)
+} derive(Eq)
 
 ///|
 fn sad_at(

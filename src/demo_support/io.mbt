@@ -1,7 +1,7 @@
 ///|
 pub(all) suberror IOError {
   IOError(String)
-} derive(Eq, Show)
+} derive(Eq)
 
 ///|
 pub fn write_bytes_to_file(

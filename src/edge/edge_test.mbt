@@ -43,8 +43,12 @@ test "canny edges extract a thin binary edge map" {
 test "canny edges rejects inverted thresholds" {
   let err = try? canny_edges(vertical_step(), 128, 128)
   inspect(
-    err,
-    content="Err(InvalidDimensions(\"canny low_threshold must be less than high_threshold\"))",
+    match err {
+      Err(@image.InvalidDimensions(message)) =>
+        message == "canny low_threshold must be less than high_threshold"
+      _ => false
+    },
+    content="true",
   )
 }
 

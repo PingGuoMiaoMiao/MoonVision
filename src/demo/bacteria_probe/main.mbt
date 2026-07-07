@@ -33,7 +33,7 @@ struct ProbePreset {
   reuse_previous_candidates : Bool
   shrink_x100 : Int
   shrink_max_bbox_area : Int
-} derive(Eq, Show)
+} derive(Eq)
 
 ///|
 struct ProbeRoi {
@@ -41,7 +41,7 @@ struct ProbeRoi {
   y : Int
   width : Int
   height : Int
-} derive(Eq, Show)
+} derive(Eq)
 
 ///|
 struct DetectedBox {
@@ -50,7 +50,7 @@ struct DetectedBox {
   width : Int
   height : Int
   area : Int
-} derive(Eq, Show)
+} derive(Eq)
 
 ///|
 fn min_int(left : Int, right : Int) -> Int {

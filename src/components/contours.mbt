@@ -2,13 +2,13 @@
 pub enum ContourKind {
   Outer
   Hole
-} derive(Eq, Show)
+} derive(Eq)
 
 ///|
 struct Point {
   x : Int
   y : Int
-} derive(Eq, Show)
+} derive(Eq)
 
 ///|
 struct Contour {
@@ -18,7 +18,7 @@ struct Contour {
   bbox : BoundingBox
   kind : ContourKind
   parent_index : Int?
-} derive(Eq, Show)
+} derive(Eq)
 
 ///|
 struct RotatedRect {
@@ -27,7 +27,7 @@ struct RotatedRect {
   width : Double
   height : Double
   angle_deg : Double
-} derive(Eq, Show)
+} derive(Eq)
 
 ///|
 priv struct RegionData {

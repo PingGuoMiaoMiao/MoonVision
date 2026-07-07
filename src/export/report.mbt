@@ -2,7 +2,7 @@
 struct ReportImage {
   label : String
   path : String
-} derive(Eq, Show)
+} derive(Eq)
 
 ///|
 pub fn report_image(label : String, path : String) -> ReportImage {

@@ -3,14 +3,14 @@ pub(all) suberror ImageError {
   InvalidDimensions(String)
   InvalidBufferLength(Int, Int)
   OutOfBounds(Int, Int)
-} derive(Eq, Show)
+} derive(Eq)
 
 ///|
 struct GrayImage {
   width : Int
   height : Int
   data : FixedArray[Byte]
-} derive(Eq, Show)
+} derive(Eq)
 
 ///|
 fn ensure_non_negative(width : Int, height : Int) -> Unit raise ImageError {

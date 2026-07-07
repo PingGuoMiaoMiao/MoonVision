@@ -25,7 +25,7 @@ fn morph_sample(
 pub(all) enum StructuringElement {
   Square
   Cross
-} derive(Eq, Show)
+} derive(Eq)
 
 ///|
 fn validate_radius(radius : Int) -> Unit raise @image.ImageError {
