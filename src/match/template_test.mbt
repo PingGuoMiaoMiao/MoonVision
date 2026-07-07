@@ -17,15 +17,19 @@ test "sad template matching finds exact embedded template" {
 test "sad template matching rejects oversized templates" {
   let source = try! @image.gray(2, 2)
   let template = try! @image.gray(3, 2)
-  let err = try? match_template_sad(source, template)
-  inspect(
-    match err {
-      Err(@image.InvalidDimensions(message)) =>
-        message == "template must not be larger than source image"
-      _ => false
-    },
-    content="true",
-  )
+  try match_template_sad(source, template) catch {
+    err =>
+      inspect(
+        match err {
+          @image.InvalidDimensions(message) =>
+            message == "template must not be larger than source image"
+          _ => false
+        },
+        content="true",
+      )
+  } noraise {
+    _ => fail("expected match_template_sad to raise")
+  }
 }
 
 ///|

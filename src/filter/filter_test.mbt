@@ -9,9 +9,21 @@ fn sample_gray() -> @image.GrayImage {
 test "convolve identity kernel keeps pixels unchanged" {
   let kernel = try! int_kernel(1, 1, [1])
   let out = try! convolve(sample_gray(), kernel)
-  inspect(
+  @debug.inspect(
     out.to_array(),
-    content="[b'\\x0A', b'\\x14', b'\\x1E', b'\\x28', b'\\x32', b'\\x3C', b'\\x46', b'\\x50', b'\\x5A']",
+    content=(
+      #|[
+      #|  0x0a,
+      #|  0x14,
+      #|  0x1e,
+      #|  0x28,
+      #|  0x32,
+      #|  0x3c,
+      #|  0x46,
+      #|  0x50,
+      #|  0x5a,
+      #|]
+    ),
   )
 }
 
@@ -20,9 +32,21 @@ test "box blur uses border copy and preserves size" {
   let out = try! box_blur(sample_gray(), radius=1)
   inspect(out.width(), content="3")
   inspect(out.height(), content="3")
-  inspect(
+  @debug.inspect(
     out.to_array(),
-    content="[b'\\x17', b'\\x1E', b'\\x25', b'\\x2B', b'\\x32', b'\\x39', b'\\x3F', b'\\x46', b'\\x4D']",
+    content=(
+      #|[
+      #|  0x17,
+      #|  0x1e,
+      #|  0x25,
+      #|  0x2b,
+      #|  0x32,
+      #|  0x39,
+      #|  0x3f,
+      #|  0x46,
+      #|  0x4d,
+      #|]
+    ),
   )
 }
 
@@ -30,13 +54,37 @@ test "box blur uses border copy and preserves size" {
 test "gaussian blur and sharpen behave on simple inputs" {
   let gaussian = try! gaussian_blur(sample_gray(), radius=1)
   let sharpened = try! sharpen(gaussian)
-  inspect(
+  @debug.inspect(
     gaussian.to_array(),
-    content="[b'\\x14', b'\\x1C', b'\\x23', b'\\x2B', b'\\x32', b'\\x3A', b'\\x41', b'\\x49', b'\\x50']",
+    content=(
+      #|[
+      #|  0x14,
+      #|  0x1c,
+      #|  0x23,
+      #|  0x2b,
+      #|  0x32,
+      #|  0x3a,
+      #|  0x41,
+      #|  0x49,
+      #|  0x50,
+      #|]
+    ),
   )
-  inspect(
+  @debug.inspect(
     sharpened.to_array(),
-    content="[b'\\x00', b'\\x07', b'\\x13', b'\\x25', b'\\x30', b'\\x43', b'\\x4F', b'\\x61', b'\\x6D']",
+    content=(
+      #|[
+      #|  0x00,
+      #|  0x07,
+      #|  0x13,
+      #|  0x25,
+      #|  0x30,
+      #|  0x43,
+      #|  0x4f,
+      #|  0x61,
+      #|  0x6d,
+      #|]
+    ),
   )
 }
 
@@ -46,8 +94,20 @@ test "median blur removes isolated salt noise" {
     b'\x32', b'\x32', b'\x32', b'\x32', b'\xff', b'\x32', b'\x32', b'\x32', b'\x32',
   ])
   let out = try! median_blur(noisy, radius=1)
-  inspect(
+  @debug.inspect(
     out.to_array(),
-    content="[b'\\x32', b'\\x32', b'\\x32', b'\\x32', b'\\x32', b'\\x32', b'\\x32', b'\\x32', b'\\x32']",
+    content=(
+      #|[
+      #|  0x32,
+      #|  0x32,
+      #|  0x32,
+      #|  0x32,
+      #|  0x32,
+      #|  0x32,
+      #|  0x32,
+      #|  0x32,
+      #|  0x32,
+      #|]
+    ),
   )
 }

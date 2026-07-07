@@ -39,12 +39,12 @@ test "equalize histogram expands low contrast fixture" {
     b'\x32', b'\x32', b'\x64', b'\x96',
   ])
   let out = try! equalize_histogram(img)
-  inspect(out.to_array(), content="[b'\\x00', b'\\x00', b'\\x80', b'\\xFF']")
+  @debug.inspect(out.to_array(), content="[0x00, 0x00, 0x80, 0xff]")
 }
 
 ///|
 test "equalize histogram maps constant image safely" {
   let img = try! @image.gray_from_array(3, 1, [b'\x2a', b'\x2a', b'\x2a'])
   let out = try! equalize_histogram(img)
-  inspect(out.to_array(), content="[b'\\x00', b'\\x00', b'\\x00']")
+  @debug.inspect(out.to_array(), content="[0x00, 0x00, 0x00]")
 }

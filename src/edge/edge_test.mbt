@@ -20,36 +20,124 @@ test "sobel x detects vertical edge and sobel y stays flat" {
 test "gradient magnitude and edge extract produce edge map" {
   let magnitude = try! gradient_magnitude(vertical_step())
   let edges = try! edge_extract(vertical_step(), threshold=200)
-  inspect(
+  @debug.inspect(
     magnitude.to_array(),
-    content="[b'\\x00', b'\\xFF', b'\\xFF', b'\\x00', b'\\x00', b'\\x00', b'\\xFF', b'\\xFF', b'\\x00', b'\\x00', b'\\x00', b'\\xFF', b'\\xFF', b'\\x00', b'\\x00', b'\\x00', b'\\xFF', b'\\xFF', b'\\x00', b'\\x00', b'\\x00', b'\\xFF', b'\\xFF', b'\\x00', b'\\x00']",
+    content=(
+      #|[
+      #|  0x00,
+      #|  0xff,
+      #|  0xff,
+      #|  0x00,
+      #|  0x00,
+      #|  0x00,
+      #|  0xff,
+      #|  0xff,
+      #|  0x00,
+      #|  0x00,
+      #|  0x00,
+      #|  0xff,
+      #|  0xff,
+      #|  0x00,
+      #|  0x00,
+      #|  0x00,
+      #|  0xff,
+      #|  0xff,
+      #|  0x00,
+      #|  0x00,
+      #|  0x00,
+      #|  0xff,
+      #|  0xff,
+      #|  0x00,
+      #|  0x00,
+      #|]
+    ),
   )
-  inspect(
+  @debug.inspect(
     edges.to_array(),
-    content="[b'\\x00', b'\\xFF', b'\\xFF', b'\\x00', b'\\x00', b'\\x00', b'\\xFF', b'\\xFF', b'\\x00', b'\\x00', b'\\x00', b'\\xFF', b'\\xFF', b'\\x00', b'\\x00', b'\\x00', b'\\xFF', b'\\xFF', b'\\x00', b'\\x00', b'\\x00', b'\\xFF', b'\\xFF', b'\\x00', b'\\x00']",
+    content=(
+      #|[
+      #|  0x00,
+      #|  0xff,
+      #|  0xff,
+      #|  0x00,
+      #|  0x00,
+      #|  0x00,
+      #|  0xff,
+      #|  0xff,
+      #|  0x00,
+      #|  0x00,
+      #|  0x00,
+      #|  0xff,
+      #|  0xff,
+      #|  0x00,
+      #|  0x00,
+      #|  0x00,
+      #|  0xff,
+      #|  0xff,
+      #|  0x00,
+      #|  0x00,
+      #|  0x00,
+      #|  0xff,
+      #|  0xff,
+      #|  0x00,
+      #|  0x00,
+      #|]
+    ),
   )
 }
 
 ///|
 test "canny edges extract a thin binary edge map" {
   let edges = try! canny_edges(vertical_step(), 64, 128)
-  inspect(
+  @debug.inspect(
     edges.to_array(),
-    content="[b'\\x00', b'\\xFF', b'\\x00', b'\\x00', b'\\x00', b'\\x00', b'\\xFF', b'\\x00', b'\\x00', b'\\x00', b'\\x00', b'\\xFF', b'\\x00', b'\\x00', b'\\x00', b'\\x00', b'\\xFF', b'\\x00', b'\\x00', b'\\x00', b'\\x00', b'\\xFF', b'\\x00', b'\\x00', b'\\x00']",
+    content=(
+      #|[
+      #|  0x00,
+      #|  0xff,
+      #|  0x00,
+      #|  0x00,
+      #|  0x00,
+      #|  0x00,
+      #|  0xff,
+      #|  0x00,
+      #|  0x00,
+      #|  0x00,
+      #|  0x00,
+      #|  0xff,
+      #|  0x00,
+      #|  0x00,
+      #|  0x00,
+      #|  0x00,
+      #|  0xff,
+      #|  0x00,
+      #|  0x00,
+      #|  0x00,
+      #|  0x00,
+      #|  0xff,
+      #|  0x00,
+      #|  0x00,
+      #|  0x00,
+      #|]
+    ),
   )
 }
 
 ///|
 test "canny edges rejects inverted thresholds" {
-  let err = try? canny_edges(vertical_step(), 128, 128)
-  inspect(
-    match err {
-      Err(@image.InvalidDimensions(message)) =>
-        message == "canny low_threshold must be less than high_threshold"
-      _ => false
-    },
-    content="true",
-  )
+  try canny_edges(vertical_step(), 128, 128) catch {
+    err =>
+      inspect(
+        match err {
+          @image.InvalidDimensions(message) =>
+            message == "canny low_threshold must be less than high_threshold"
+          _ => false
+        },
+        content="true",
+      )
+  } noraise {
+    _ => fail("expected canny_edges to raise")
+  }
 }
 
 ///|

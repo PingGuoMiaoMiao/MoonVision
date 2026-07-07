@@ -9,14 +9,18 @@ test "gray image construction and pixel access" {
 
 ///|
 test "gray image rejects bad buffer length" {
-  let err = try? gray_from_array(2, 2, [b'\x01'])
-  inspect(
-    match err {
-      Err(InvalidBufferLength(expected, actual)) => expected == 4 && actual == 1
-      _ => false
-    },
-    content="true",
-  )
+  try gray_from_array(2, 2, [b'\x01']) catch {
+    err =>
+      inspect(
+        match err {
+          InvalidBufferLength(expected, actual) => expected == 4 && actual == 1
+          _ => false
+        },
+        content="true",
+      )
+  } noraise {
+    _ => fail("expected gray_from_array to raise")
+  }
 }
 
 ///|
@@ -85,9 +89,24 @@ test "png decoding adapts RGBA data to rgb image" {
   let img = try! rgb_from_png_bytes(fixture_png_2x2())
   inspect(img.width(), content="2")
   inspect(img.height(), content="2")
-  inspect(
+  @debug.inspect(
     img.to_array(),
-    content="[b'\\xFF', b'\\x00', b'\\x00', b'\\x00', b'\\xFF', b'\\x00', b'\\x00', b'\\x00', b'\\xFF', b'\\xFF', b'\\xFF', b'\\xFF']",
+    content=(
+      #|[
+      #|  0xff,
+      #|  0x00,
+      #|  0x00,
+      #|  0x00,
+      #|  0xff,
+      #|  0x00,
+      #|  0x00,
+      #|  0x00,
+      #|  0xff,
+      #|  0xff,
+      #|  0xff,
+      #|  0xff,
+      #|]
+    ),
   )
 }
 
@@ -106,25 +125,76 @@ test "gray transforms resize flip and rotate predictably" {
   let flipped_v = try! flip_vertical(img)
   let rotated_cw = try! rotate90_cw(img)
   let rotated_ccw = try! rotate90_ccw(img)
-  inspect(
+  @debug.inspect(
     resized.to_array(),
-    content="[b'\\x01', b'\\x01', b'\\x02', b'\\x02', b'\\x03', b'\\x03', b'\\x04', b'\\x04', b'\\x05', b'\\x05', b'\\x06', b'\\x06']",
+    content=(
+      #|[
+      #|  0x01,
+      #|  0x01,
+      #|  0x02,
+      #|  0x02,
+      #|  0x03,
+      #|  0x03,
+      #|  0x04,
+      #|  0x04,
+      #|  0x05,
+      #|  0x05,
+      #|  0x06,
+      #|  0x06,
+      #|]
+    ),
   )
-  inspect(
+  @debug.inspect(
     flipped_h.to_array(),
-    content="[b'\\x02', b'\\x01', b'\\x04', b'\\x03', b'\\x06', b'\\x05']",
+    content=(
+      #|[
+      #|  0x02,
+      #|  0x01,
+      #|  0x04,
+      #|  0x03,
+      #|  0x06,
+      #|  0x05,
+      #|]
+    ),
   )
-  inspect(
+  @debug.inspect(
     flipped_v.to_array(),
-    content="[b'\\x05', b'\\x06', b'\\x03', b'\\x04', b'\\x01', b'\\x02']",
+    content=(
+      #|[
+      #|  0x05,
+      #|  0x06,
+      #|  0x03,
+      #|  0x04,
+      #|  0x01,
+      #|  0x02,
+      #|]
+    ),
   )
-  inspect(
+  @debug.inspect(
     rotated_cw.to_array(),
-    content="[b'\\x05', b'\\x03', b'\\x01', b'\\x06', b'\\x04', b'\\x02']",
+    content=(
+      #|[
+      #|  0x05,
+      #|  0x03,
+      #|  0x01,
+      #|  0x06,
+      #|  0x04,
+      #|  0x02,
+      #|]
+    ),
   )
-  inspect(
+  @debug.inspect(
     rotated_ccw.to_array(),
-    content="[b'\\x02', b'\\x04', b'\\x06', b'\\x01', b'\\x03', b'\\x05']",
+    content=(
+      #|[
+      #|  0x02,
+      #|  0x04,
+      #|  0x06,
+      #|  0x01,
+      #|  0x03,
+      #|  0x05,
+      #|]
+    ),
   )
 }
 
@@ -132,24 +202,40 @@ test "gray transforms resize flip and rotate predictably" {
 test "bilinear resize preserves dimensions and interpolates values" {
   let img = try! gray_from_array(2, 2, [b'\x00', b'\x64', b'\x96', b'\xfa'])
   let same = try! resize_bilinear(img, 2, 2)
-  inspect(same.to_array(), content="[b'\\x00', b'\\x64', b'\\x96', b'\\xFA']")
+  @debug.inspect(same.to_array(), content="[0x00, 0x64, 0x96, 0xfa]")
   let resized = try! resize_bilinear(img, 3, 3)
-  inspect(
+  @debug.inspect(
     resized.to_array(),
-    content="[b'\\x00', b'\\x32', b'\\x64', b'\\x4B', b'\\x7D', b'\\xAF', b'\\x96', b'\\xC8', b'\\xFA']",
+    content=(
+      #|[
+      #|  0x00,
+      #|  0x32,
+      #|  0x64,
+      #|  0x4b,
+      #|  0x7d,
+      #|  0xaf,
+      #|  0x96,
+      #|  0xc8,
+      #|  0xfa,
+      #|]
+    ),
   )
 }
 
 ///|
 test "bilinear resize rejects invalid dimensions" {
   let img = try! gray(2, 2)
-  let err = try? resize_bilinear(img, 0, 2)
-  inspect(
-    match err {
-      Err(InvalidDimensions(message)) =>
-        message == "resize width and height must both be greater than zero"
-      _ => false
-    },
-    content="true",
-  )
+  try resize_bilinear(img, 0, 2) catch {
+    err =>
+      inspect(
+        match err {
+          InvalidDimensions(message) =>
+            message == "resize width and height must both be greater than zero"
+          _ => false
+        },
+        content="true",
+      )
+  } noraise {
+    _ => fail("expected resize_bilinear to raise")
+  }
 }
