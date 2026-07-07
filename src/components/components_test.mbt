@@ -1,66 +1,32 @@
+///|
 fn component_fixture() -> @image.GrayImage {
-  try! @image.gray_from_array(
-    6,
-    5,
-    [
-      b'\x00',
-      b'\xFF',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\xFF',
-      b'\x00',
-      b'\xFF',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\xFF',
-      b'\x00',
-      b'\xFF',
-      b'\xFF',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\xFF',
-      b'\x00',
-      b'\x00',
-    ],
-  )
+  try! @image.gray_from_array(6, 5, [
+    b'\x00', b'\xFF', b'\x00', b'\x00', b'\x00', b'\x00', b'\x00', b'\x00', b'\xFF',
+    b'\x00', b'\xFF', b'\x00', b'\x00', b'\x00', b'\x00', b'\x00', b'\xFF', b'\x00',
+    b'\xFF', b'\xFF', b'\x00', b'\x00', b'\x00', b'\x00', b'\x00', b'\x00', b'\x00',
+    b'\xFF', b'\x00', b'\x00',
+  ])
 }
 
 ///|
 test "connected components merges diagonal foreground in 8-neighborhood" {
   let components = try! connected_components(component_fixture())
   inspect(components.length(), content="4")
-
   let first = components[0]
   let second = components[1]
   let third = components[2]
   let fourth = components[3]
-
   inspect(first.area(), content="2")
   inspect(first.bbox().x(), content="1")
   inspect(first.bbox().y(), content="0")
   inspect(first.bbox().width(), content="2")
   inspect(first.bbox().height(), content="2")
-
   inspect(second.area(), content="2")
   inspect(second.bbox().x(), content="4")
   inspect(second.bbox().y(), content="1")
-
   inspect(third.area(), content="2")
   inspect(third.bbox().x(), content="0")
   inspect(third.bbox().y(), content="3")
-
   inspect(fourth.area(), content="1")
   inspect(fourth.bbox().x(), content="3")
   inspect(fourth.bbox().y(), content="4")
@@ -75,31 +41,15 @@ test "connected components applies minimum area filter" {
   inspect(components[2].area(), content="2")
 }
 
+///|
 fn contour_square_fixture() -> @image.GrayImage {
-  try! @image.gray_from_array(
-    4,
-    4,
-    [
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\xFF',
-      b'\xFF',
-      b'\x00',
-      b'\x00',
-      b'\xFF',
-      b'\xFF',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-    ],
-  )
+  try! @image.gray_from_array(4, 4, [
+    b'\x00', b'\x00', b'\x00', b'\x00', b'\x00', b'\xFF', b'\xFF', b'\x00', b'\x00',
+    b'\xFF', b'\xFF', b'\x00', b'\x00', b'\x00', b'\x00', b'\x00',
+  ])
 }
 
+///|
 fn kind_is_outer(kind : ContourKind) -> Bool {
   match kind {
     Outer => true
@@ -107,6 +57,7 @@ fn kind_is_outer(kind : ContourKind) -> Bool {
   }
 }
 
+///|
 fn parent_or_minus_one(parent : Int?) -> Int {
   match parent {
     Some(index) => index
@@ -114,6 +65,7 @@ fn parent_or_minus_one(parent : Int?) -> Int {
   }
 }
 
+///|
 fn abs_double(value : Double) -> Double {
   if value < 0.0 {
     -value
@@ -122,125 +74,38 @@ fn abs_double(value : Double) -> Double {
   }
 }
 
+///|
 fn double_close(actual : Double, expected : Double, tolerance : Double) -> Bool {
   abs_double(actual - expected) <= tolerance
 }
 
+///|
 fn contour_rectangle_fixture() -> @image.GrayImage {
-  try! @image.gray_from_array(
-    6,
-    5,
-    [
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\xFF',
-      b'\xFF',
-      b'\xFF',
-      b'\xFF',
-      b'\x00',
-      b'\x00',
-      b'\xFF',
-      b'\xFF',
-      b'\xFF',
-      b'\xFF',
-      b'\x00',
-      b'\x00',
-      b'\xFF',
-      b'\xFF',
-      b'\xFF',
-      b'\xFF',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-    ],
-  )
+  try! @image.gray_from_array(6, 5, [
+    b'\x00', b'\x00', b'\x00', b'\x00', b'\x00', b'\x00', b'\x00', b'\xFF', b'\xFF',
+    b'\xFF', b'\xFF', b'\x00', b'\x00', b'\xFF', b'\xFF', b'\xFF', b'\xFF', b'\x00',
+    b'\x00', b'\xFF', b'\xFF', b'\xFF', b'\xFF', b'\x00', b'\x00', b'\x00', b'\x00',
+    b'\x00', b'\x00', b'\x00',
+  ])
 }
 
+///|
 fn contour_notch_fixture() -> @image.GrayImage {
-  try! @image.gray_from_array(
-    5,
-    5,
-    [
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\xFF',
-      b'\xFF',
-      b'\xFF',
-      b'\x00',
-      b'\x00',
-      b'\xFF',
-      b'\xFF',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\xFF',
-      b'\xFF',
-      b'\xFF',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-    ],
-  )
+  try! @image.gray_from_array(5, 5, [
+    b'\x00', b'\x00', b'\x00', b'\x00', b'\x00', b'\x00', b'\xFF', b'\xFF', b'\xFF',
+    b'\x00', b'\x00', b'\xFF', b'\xFF', b'\x00', b'\x00', b'\x00', b'\xFF', b'\xFF',
+    b'\xFF', b'\x00', b'\x00', b'\x00', b'\x00', b'\x00', b'\x00',
+  ])
 }
 
+///|
 fn contour_diamond_fixture() -> @image.GrayImage {
-  try! @image.gray_from_array(
-    7,
-    5,
-    [
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\xFF',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\xFF',
-      b'\xFF',
-      b'\xFF',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\xFF',
-      b'\xFF',
-      b'\xFF',
-      b'\xFF',
-      b'\xFF',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\xFF',
-      b'\xFF',
-      b'\xFF',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\xFF',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-    ],
-  )
+  try! @image.gray_from_array(7, 5, [
+    b'\x00', b'\x00', b'\x00', b'\xFF', b'\x00', b'\x00', b'\x00', b'\x00', b'\x00',
+    b'\xFF', b'\xFF', b'\xFF', b'\x00', b'\x00', b'\x00', b'\xFF', b'\xFF', b'\xFF',
+    b'\xFF', b'\xFF', b'\x00', b'\x00', b'\x00', b'\xFF', b'\xFF', b'\xFF', b'\x00',
+    b'\x00', b'\x00', b'\x00', b'\x00', b'\xFF', b'\x00', b'\x00', b'\x00',
+  ])
 }
 
 ///|
@@ -271,33 +136,11 @@ test "find contours handles empty and multi-object binary images" {
   let empty = try! @image.gray(3, 3)
   let contours = try! find_contours(empty)
   inspect(contours.length(), content="0")
-
-  let multi = try! @image.gray_from_array(
-    5,
-    4,
-    [
-      b'\xFF',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\xFF',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\xFF',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\xFF',
-    ],
-  )
+  let multi = try! @image.gray_from_array(5, 4, [
+    b'\xFF', b'\x00', b'\x00', b'\x00', b'\x00', b'\x00', b'\x00', b'\x00', b'\xFF',
+    b'\x00', b'\x00', b'\x00', b'\x00', b'\xFF', b'\x00', b'\x00', b'\x00', b'\x00',
+    b'\x00', b'\xFF',
+  ])
   let multi_contours = try! find_contours(multi, connectivity=4)
   inspect(multi_contours.length(), content="3")
   inspect(contour_area(multi_contours[0]), content="1")
@@ -307,21 +150,9 @@ test "find contours handles empty and multi-object binary images" {
 
 ///|
 test "find contours supports edge-touching shapes" {
-  let touching = try! @image.gray_from_array(
-    3,
-    3,
-    [
-      b'\xFF',
-      b'\xFF',
-      b'\x00',
-      b'\xFF',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-    ],
-  )
+  let touching = try! @image.gray_from_array(3, 3, [
+    b'\xFF', b'\xFF', b'\x00', b'\xFF', b'\x00', b'\x00', b'\x00', b'\x00', b'\x00',
+  ])
   let contours = try! find_contours(touching)
   inspect(contours.length(), content="1")
   inspect(contour_bbox(contours[0]).x(), content="0")
@@ -332,27 +163,10 @@ test "find contours supports edge-touching shapes" {
 
 ///|
 test "find contours preserves boundary walk order on thin lines" {
-  let line = try! @image.gray_from_array(
-    5,
-    3,
-    [
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\xFF',
-      b'\xFF',
-      b'\xFF',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-    ],
-  )
+  let line = try! @image.gray_from_array(5, 3, [
+    b'\x00', b'\x00', b'\x00', b'\x00', b'\x00', b'\x00', b'\xFF', b'\xFF', b'\xFF',
+    b'\x00', b'\x00', b'\x00', b'\x00', b'\x00', b'\x00',
+  ])
   let contours = try! find_contours(line)
   inspect(contours.length(), content="1")
   inspect(contours[0].points().length(), content="3")
@@ -366,28 +180,10 @@ test "find contours preserves boundary walk order on thin lines" {
 
 ///|
 test "find contours splits hollow foreground into outer and hole contours" {
-  let hollow = try! @image.gray_from_array(
-    4,
-    4,
-    [
-      b'\xFF',
-      b'\xFF',
-      b'\xFF',
-      b'\xFF',
-      b'\xFF',
-      b'\x00',
-      b'\x00',
-      b'\xFF',
-      b'\xFF',
-      b'\x00',
-      b'\x00',
-      b'\xFF',
-      b'\xFF',
-      b'\xFF',
-      b'\xFF',
-      b'\xFF',
-    ],
-  )
+  let hollow = try! @image.gray_from_array(4, 4, [
+    b'\xFF', b'\xFF', b'\xFF', b'\xFF', b'\xFF', b'\x00', b'\x00', b'\xFF', b'\xFF',
+    b'\x00', b'\x00', b'\xFF', b'\xFF', b'\xFF', b'\xFF', b'\xFF',
+  ])
   let contours = try! find_contours(hollow)
   inspect(contours.length(), content="2")
   inspect(contour_area(contours[0]), content="12")
@@ -410,61 +206,14 @@ test "find contours splits hollow foreground into outer and hole contours" {
 
 ///|
 test "find contours assigns parent hierarchy on nested foreground islands" {
-  let nested = try! @image.gray_from_array(
-    7,
-    7,
-    [
-      b'\xFF',
-      b'\xFF',
-      b'\xFF',
-      b'\xFF',
-      b'\xFF',
-      b'\xFF',
-      b'\xFF',
-      b'\xFF',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\xFF',
-      b'\xFF',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\xFF',
-      b'\xFF',
-      b'\x00',
-      b'\x00',
-      b'\xFF',
-      b'\x00',
-      b'\x00',
-      b'\xFF',
-      b'\xFF',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\xFF',
-      b'\xFF',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\xFF',
-      b'\xFF',
-      b'\xFF',
-      b'\xFF',
-      b'\xFF',
-      b'\xFF',
-      b'\xFF',
-      b'\xFF',
-    ],
-  )
+  let nested = try! @image.gray_from_array(7, 7, [
+    b'\xFF', b'\xFF', b'\xFF', b'\xFF', b'\xFF', b'\xFF', b'\xFF', b'\xFF', b'\x00',
+    b'\x00', b'\x00', b'\x00', b'\x00', b'\xFF', b'\xFF', b'\x00', b'\x00', b'\x00',
+    b'\x00', b'\x00', b'\xFF', b'\xFF', b'\x00', b'\x00', b'\xFF', b'\x00', b'\x00',
+    b'\xFF', b'\xFF', b'\x00', b'\x00', b'\x00', b'\x00', b'\x00', b'\xFF', b'\xFF',
+    b'\x00', b'\x00', b'\x00', b'\x00', b'\x00', b'\xFF', b'\xFF', b'\xFF', b'\xFF',
+    b'\xFF', b'\xFF', b'\xFF', b'\xFF',
+  ])
   let contours = try! find_contours(nested)
   inspect(contours.length(), content="3")
   inspect(kind_is_outer(contour_kind(contours[0])), content="true")
@@ -533,35 +282,33 @@ test "min area rect keeps a stable non-zero angle on a diamond-like region" {
 ///|
 test "contour descriptors stay finite on fixed fixtures" {
   let rectangle = (try! find_contours(contour_rectangle_fixture()))[0]
-  inspect(contour_vertex_count(rectangle) == rectangle.points().length(), content="true")
-  inspect(double_close(contour_circularity(rectangle), 0.7693696294505615, 0.001), content="true")
-
+  inspect(
+    contour_vertex_count(rectangle) == rectangle.points().length(),
+    content="true",
+  )
+  inspect(
+    double_close(contour_circularity(rectangle), 0.7693696294505615, 0.001),
+    content="true",
+  )
   let notch = (try! find_contours(contour_notch_fixture()))[0]
-  inspect(double_close(contour_solidity(notch), 0.8888888888888888, 0.001), content="true")
+  inspect(
+    double_close(contour_solidity(notch), 0.8888888888888888, 0.001),
+    content="true",
+  )
 }
 
 ///|
 test "manhattan distance transform handles empty and isolated foreground" {
   let empty = try! @image.gray(3, 3)
   let empty_distance = try! distance_transform_manhattan(empty)
-  inspect(empty_distance.to_array(), content="[b'\\x00', b'\\x00', b'\\x00', b'\\x00', b'\\x00', b'\\x00', b'\\x00', b'\\x00', b'\\x00']")
-  inspect(try! max_distance(empty_distance), content="0")
-
-  let single = try! @image.gray_from_array(
-    3,
-    3,
-    [
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\xff',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-    ],
+  inspect(
+    empty_distance.to_array(),
+    content="[b'\\x00', b'\\x00', b'\\x00', b'\\x00', b'\\x00', b'\\x00', b'\\x00', b'\\x00', b'\\x00']",
   )
+  inspect(try! max_distance(empty_distance), content="0")
+  let single = try! @image.gray_from_array(3, 3, [
+    b'\x00', b'\x00', b'\x00', b'\x00', b'\xff', b'\x00', b'\x00', b'\x00', b'\x00',
+  ])
   let single_distance = try! distance_transform_manhattan(single)
   inspect(try! single_distance.get(1, 1), content="b'\\x01'")
   inspect(try! max_distance(single_distance), content="1")
@@ -569,37 +316,11 @@ test "manhattan distance transform handles empty and isolated foreground" {
 
 ///|
 test "manhattan distance transform grows toward rectangle center" {
-  let rect = try! @image.gray_from_array(
-    5,
-    5,
-    [
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\xff',
-      b'\xff',
-      b'\xff',
-      b'\x00',
-      b'\x00',
-      b'\xff',
-      b'\xff',
-      b'\xff',
-      b'\x00',
-      b'\x00',
-      b'\xff',
-      b'\xff',
-      b'\xff',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-    ],
-  )
+  let rect = try! @image.gray_from_array(5, 5, [
+    b'\x00', b'\x00', b'\x00', b'\x00', b'\x00', b'\x00', b'\xff', b'\xff', b'\xff',
+    b'\x00', b'\x00', b'\xff', b'\xff', b'\xff', b'\x00', b'\x00', b'\xff', b'\xff',
+    b'\xff', b'\x00', b'\x00', b'\x00', b'\x00', b'\x00', b'\x00',
+  ])
   let distance = try! distance_transform_manhattan(rect)
   inspect(try! distance.get(1, 1), content="b'\\x01'")
   inspect(try! distance.get(2, 2), content="b'\\x02'")

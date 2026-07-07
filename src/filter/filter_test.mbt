@@ -1,19 +1,8 @@
+///|
 fn sample_gray() -> @image.GrayImage {
-  try! @image.gray_from_array(
-    3,
-    3,
-    [
-      b'\x0A',
-      b'\x14',
-      b'\x1E',
-      b'\x28',
-      b'\x32',
-      b'\x3C',
-      b'\x46',
-      b'\x50',
-      b'\x5A',
-    ],
-  )
+  try! @image.gray_from_array(3, 3, [
+    b'\x0A', b'\x14', b'\x1E', b'\x28', b'\x32', b'\x3C', b'\x46', b'\x50', b'\x5A',
+  ])
 }
 
 ///|
@@ -22,9 +11,7 @@ test "convolve identity kernel keeps pixels unchanged" {
   let out = try! convolve(sample_gray(), kernel)
   inspect(
     out.to_array(),
-    content=(
-      "[b'\\x0A', b'\\x14', b'\\x1E', b'\\x28', b'\\x32', b'\\x3C', b'\\x46', b'\\x50', b'\\x5A']"
-    ),
+    content="[b'\\x0A', b'\\x14', b'\\x1E', b'\\x28', b'\\x32', b'\\x3C', b'\\x46', b'\\x50', b'\\x5A']",
   )
 }
 
@@ -35,9 +22,7 @@ test "box blur uses border copy and preserves size" {
   inspect(out.height(), content="3")
   inspect(
     out.to_array(),
-    content=(
-      "[b'\\x17', b'\\x1E', b'\\x25', b'\\x2B', b'\\x32', b'\\x39', b'\\x3F', b'\\x46', b'\\x4D']"
-    ),
+    content="[b'\\x17', b'\\x1E', b'\\x25', b'\\x2B', b'\\x32', b'\\x39', b'\\x3F', b'\\x46', b'\\x4D']",
   )
 }
 
@@ -47,40 +32,22 @@ test "gaussian blur and sharpen behave on simple inputs" {
   let sharpened = try! sharpen(gaussian)
   inspect(
     gaussian.to_array(),
-    content=(
-      "[b'\\x14', b'\\x1C', b'\\x23', b'\\x2B', b'\\x32', b'\\x3A', b'\\x41', b'\\x49', b'\\x50']"
-    ),
+    content="[b'\\x14', b'\\x1C', b'\\x23', b'\\x2B', b'\\x32', b'\\x3A', b'\\x41', b'\\x49', b'\\x50']",
   )
   inspect(
     sharpened.to_array(),
-    content=(
-      "[b'\\x00', b'\\x07', b'\\x13', b'\\x25', b'\\x30', b'\\x43', b'\\x4F', b'\\x61', b'\\x6D']"
-    ),
+    content="[b'\\x00', b'\\x07', b'\\x13', b'\\x25', b'\\x30', b'\\x43', b'\\x4F', b'\\x61', b'\\x6D']",
   )
 }
 
 ///|
 test "median blur removes isolated salt noise" {
-  let noisy = try! @image.gray_from_array(
-    3,
-    3,
-    [
-      b'\x32',
-      b'\x32',
-      b'\x32',
-      b'\x32',
-      b'\xff',
-      b'\x32',
-      b'\x32',
-      b'\x32',
-      b'\x32',
-    ],
-  )
+  let noisy = try! @image.gray_from_array(3, 3, [
+    b'\x32', b'\x32', b'\x32', b'\x32', b'\xff', b'\x32', b'\x32', b'\x32', b'\x32',
+  ])
   let out = try! median_blur(noisy, radius=1)
   inspect(
     out.to_array(),
-    content=(
-      "[b'\\x32', b'\\x32', b'\\x32', b'\\x32', b'\\x32', b'\\x32', b'\\x32', b'\\x32', b'\\x32']"
-    ),
+    content="[b'\\x32', b'\\x32', b'\\x32', b'\\x32', b'\\x32', b'\\x32', b'\\x32', b'\\x32', b'\\x32']",
   )
 }

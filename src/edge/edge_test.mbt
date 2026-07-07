@@ -1,35 +1,10 @@
+///|
 fn vertical_step() -> @image.GrayImage {
-  try! @image.gray_from_array(
-    5,
-    5,
-    [
-      b'\x00',
-      b'\x00',
-      b'\xFF',
-      b'\xFF',
-      b'\xFF',
-      b'\x00',
-      b'\x00',
-      b'\xFF',
-      b'\xFF',
-      b'\xFF',
-      b'\x00',
-      b'\x00',
-      b'\xFF',
-      b'\xFF',
-      b'\xFF',
-      b'\x00',
-      b'\x00',
-      b'\xFF',
-      b'\xFF',
-      b'\xFF',
-      b'\x00',
-      b'\x00',
-      b'\xFF',
-      b'\xFF',
-      b'\xFF',
-    ],
-  )
+  try! @image.gray_from_array(5, 5, [
+    b'\x00', b'\x00', b'\xFF', b'\xFF', b'\xFF', b'\x00', b'\x00', b'\xFF', b'\xFF',
+    b'\xFF', b'\x00', b'\x00', b'\xFF', b'\xFF', b'\xFF', b'\x00', b'\x00', b'\xFF',
+    b'\xFF', b'\xFF', b'\x00', b'\x00', b'\xFF', b'\xFF', b'\xFF',
+  ])
 }
 
 ///|
@@ -47,15 +22,11 @@ test "gradient magnitude and edge extract produce edge map" {
   let edges = try! edge_extract(vertical_step(), threshold=200)
   inspect(
     magnitude.to_array(),
-    content=(
-      "[b'\\x00', b'\\xFF', b'\\xFF', b'\\x00', b'\\x00', b'\\x00', b'\\xFF', b'\\xFF', b'\\x00', b'\\x00', b'\\x00', b'\\xFF', b'\\xFF', b'\\x00', b'\\x00', b'\\x00', b'\\xFF', b'\\xFF', b'\\x00', b'\\x00', b'\\x00', b'\\xFF', b'\\xFF', b'\\x00', b'\\x00']"
-    ),
+    content="[b'\\x00', b'\\xFF', b'\\xFF', b'\\x00', b'\\x00', b'\\x00', b'\\xFF', b'\\xFF', b'\\x00', b'\\x00', b'\\x00', b'\\xFF', b'\\xFF', b'\\x00', b'\\x00', b'\\x00', b'\\xFF', b'\\xFF', b'\\x00', b'\\x00', b'\\x00', b'\\xFF', b'\\xFF', b'\\x00', b'\\x00']",
   )
   inspect(
     edges.to_array(),
-    content=(
-      "[b'\\x00', b'\\xFF', b'\\xFF', b'\\x00', b'\\x00', b'\\x00', b'\\xFF', b'\\xFF', b'\\x00', b'\\x00', b'\\x00', b'\\xFF', b'\\xFF', b'\\x00', b'\\x00', b'\\x00', b'\\xFF', b'\\xFF', b'\\x00', b'\\x00', b'\\x00', b'\\xFF', b'\\xFF', b'\\x00', b'\\x00']"
-    ),
+    content="[b'\\x00', b'\\xFF', b'\\xFF', b'\\x00', b'\\x00', b'\\x00', b'\\xFF', b'\\xFF', b'\\x00', b'\\x00', b'\\x00', b'\\xFF', b'\\xFF', b'\\x00', b'\\x00', b'\\x00', b'\\xFF', b'\\xFF', b'\\x00', b'\\x00', b'\\x00', b'\\xFF', b'\\xFF', b'\\x00', b'\\x00']",
   )
 }
 
@@ -64,9 +35,7 @@ test "canny edges extract a thin binary edge map" {
   let edges = try! canny_edges(vertical_step(), 64, 128)
   inspect(
     edges.to_array(),
-    content=(
-      "[b'\\x00', b'\\xFF', b'\\x00', b'\\x00', b'\\x00', b'\\x00', b'\\xFF', b'\\x00', b'\\x00', b'\\x00', b'\\x00', b'\\xFF', b'\\x00', b'\\x00', b'\\x00', b'\\x00', b'\\xFF', b'\\x00', b'\\x00', b'\\x00', b'\\x00', b'\\xFF', b'\\x00', b'\\x00', b'\\x00']"
-    ),
+    content="[b'\\x00', b'\\xFF', b'\\x00', b'\\x00', b'\\x00', b'\\x00', b'\\xFF', b'\\x00', b'\\x00', b'\\x00', b'\\x00', b'\\xFF', b'\\x00', b'\\x00', b'\\x00', b'\\x00', b'\\xFF', b'\\x00', b'\\x00', b'\\x00', b'\\x00', b'\\xFF', b'\\x00', b'\\x00', b'\\x00']",
   )
 }
 
@@ -81,75 +50,26 @@ test "canny edges rejects inverted thresholds" {
 
 ///|
 test "hough lines detect vertical and horizontal edge maps" {
-  let vertical = try! @image.gray_from_array(
-    5,
-    5,
-    [
-      b'\x00',
-      b'\x00',
-      b'\xff',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\xff',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\xff',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\xff',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\xff',
-      b'\x00',
-      b'\x00',
-    ],
-  )
+  let vertical = try! @image.gray_from_array(5, 5, [
+    b'\x00', b'\x00', b'\xff', b'\x00', b'\x00', b'\x00', b'\x00', b'\xff', b'\x00',
+    b'\x00', b'\x00', b'\x00', b'\xff', b'\x00', b'\x00', b'\x00', b'\x00', b'\xff',
+    b'\x00', b'\x00', b'\x00', b'\x00', b'\xff', b'\x00', b'\x00',
+  ])
   let vertical_lines = try! hough_lines(vertical, vote_threshold=5, max_lines=1)
   inspect(vertical_lines.length(), content="1")
   inspect(vertical_lines[0].theta_bucket(), content="0")
   inspect(vertical_lines[0].rho(), content="2")
   inspect(vertical_lines[0].votes(), content="5")
-
-  let horizontal = try! @image.gray_from_array(
-    5,
-    5,
-    [
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\xff',
-      b'\xff',
-      b'\xff',
-      b'\xff',
-      b'\xff',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-    ],
+  let horizontal = try! @image.gray_from_array(5, 5, [
+    b'\x00', b'\x00', b'\x00', b'\x00', b'\x00', b'\x00', b'\x00', b'\x00', b'\x00',
+    b'\x00', b'\xff', b'\xff', b'\xff', b'\xff', b'\xff', b'\x00', b'\x00', b'\x00',
+    b'\x00', b'\x00', b'\x00', b'\x00', b'\x00', b'\x00', b'\x00',
+  ])
+  let horizontal_lines = try! hough_lines(
+    horizontal,
+    vote_threshold=5,
+    max_lines=1,
   )
-  let horizontal_lines = try! hough_lines(horizontal, vote_threshold=5, max_lines=1)
   inspect(horizontal_lines.length(), content="1")
   inspect(horizontal_lines[0].theta_bucket(), content="90")
   inspect(horizontal_lines[0].rho(), content="2")
@@ -161,22 +81,9 @@ test "hough lines handle empty maps and deterministic ordering" {
   let empty = try! @image.gray(4, 4)
   let none = try! hough_lines(empty, vote_threshold=1)
   inspect(none.length(), content="0")
-
-  let cross = try! @image.gray_from_array(
-    3,
-    3,
-    [
-      b'\x00',
-      b'\xff',
-      b'\x00',
-      b'\xff',
-      b'\xff',
-      b'\xff',
-      b'\x00',
-      b'\xff',
-      b'\x00',
-    ],
-  )
+  let cross = try! @image.gray_from_array(3, 3, [
+    b'\x00', b'\xff', b'\x00', b'\xff', b'\xff', b'\xff', b'\x00', b'\xff', b'\x00',
+  ])
   let lines = try! hough_lines(cross, vote_threshold=3, max_lines=2)
   inspect(lines.length(), content="2")
   inspect(lines[0].theta_bucket(), content="0")

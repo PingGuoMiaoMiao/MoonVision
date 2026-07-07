@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - v2.0
+      - main
+      - master
+  pull_request:
+
+jobs:
+  moonbit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup MoonBit
+        uses: hustcer/setup-moonbit@v1
+
+      - name: moon check
+        run: moon check -d
+
+      - name: moon fmt --deny-warn
+        run: moon check --fmt -d
+
+      - name: moon info --deny-warn
+        run: moon info
+
+      - name: moon test
+        run: moon test -d

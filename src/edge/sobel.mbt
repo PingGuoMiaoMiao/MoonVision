@@ -1,8 +1,10 @@
+///|
 priv struct SobelPair {
   gx : Int
   gy : Int
 }
 
+///|
 fn edge_clamp_coordinate(value : Int, upper_bound : Int) -> Int {
   if value < 0 {
     0
@@ -13,6 +15,7 @@ fn edge_clamp_coordinate(value : Int, upper_bound : Int) -> Int {
   }
 }
 
+///|
 fn edge_sample(
   img : @image.GrayImage,
   x : Int,
@@ -24,6 +27,7 @@ fn edge_sample(
   )
 }
 
+///|
 fn sobel_pair_at(
   img : @image.GrayImage,
   x : Int,
@@ -37,12 +41,12 @@ fn sobel_pair_at(
   let p20 = edge_sample(img, x - 1, y + 1).to_int()
   let p21 = edge_sample(img, x, y + 1).to_int()
   let p22 = edge_sample(img, x + 1, y + 1).to_int()
-
   let gx = -p00 + p02 - 2 * p10 + 2 * p12 - p20 + p22
   let gy = p00 + 2 * p01 + p02 - p20 - 2 * p21 - p22
   { gx, gy }
 }
 
+///|
 fn validate_edge_threshold(threshold : Int) -> Unit raise @image.ImageError {
   if threshold < 0 || threshold > 255 {
     raise @image.InvalidDimensions("edge threshold must be in the range 0..255")
@@ -50,7 +54,9 @@ fn validate_edge_threshold(threshold : Int) -> Unit raise @image.ImageError {
 }
 
 ///|
-pub fn sobel_x(img : @image.GrayImage) -> @image.GrayImage raise @image.ImageError {
+pub fn sobel_x(
+  img : @image.GrayImage,
+) -> @image.GrayImage raise @image.ImageError {
   let out = @image.gray(img.width(), img.height())
   for y = 0; y < img.height(); y = y + 1 {
     for x = 0; x < img.width(); x = x + 1 {
@@ -62,7 +68,9 @@ pub fn sobel_x(img : @image.GrayImage) -> @image.GrayImage raise @image.ImageErr
 }
 
 ///|
-pub fn sobel_y(img : @image.GrayImage) -> @image.GrayImage raise @image.ImageError {
+pub fn sobel_y(
+  img : @image.GrayImage,
+) -> @image.GrayImage raise @image.ImageError {
   let out = @image.gray(img.width(), img.height())
   for y = 0; y < img.height(); y = y + 1 {
     for x = 0; x < img.width(); x = x + 1 {

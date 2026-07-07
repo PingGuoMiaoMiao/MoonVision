@@ -1,10 +1,8 @@
 ///|
 test "gray histogram counts exact byte values" {
-  let img = try! @image.gray_from_array(
-    4,
-    1,
-    [b'\x00', b'\x02', b'\x02', b'\xff'],
-  )
+  let img = try! @image.gray_from_array(4, 1, [
+    b'\x00', b'\x02', b'\x02', b'\xff',
+  ])
   let hist = try! gray_histogram(img)
   inspect(hist[0], content="1")
   inspect(hist[1], content="0")
@@ -37,11 +35,9 @@ test "normalize histogram scales by maximum count" {
 
 ///|
 test "equalize histogram expands low contrast fixture" {
-  let img = try! @image.gray_from_array(
-    4,
-    1,
-    [b'\x32', b'\x32', b'\x64', b'\x96'],
-  )
+  let img = try! @image.gray_from_array(4, 1, [
+    b'\x32', b'\x32', b'\x64', b'\x96',
+  ])
   let out = try! equalize_histogram(img)
   inspect(out.to_array(), content="[b'\\x00', b'\\x00', b'\\x80', b'\\xFF']")
 }

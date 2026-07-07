@@ -1,5 +1,7 @@
 ///|
-pub fn invert(img : @image.GrayImage) -> @image.GrayImage raise @image.ImageError {
+pub fn invert(
+  img : @image.GrayImage,
+) -> @image.GrayImage raise @image.ImageError {
   let out = img.copy()
   invert_in_place(out)
   out

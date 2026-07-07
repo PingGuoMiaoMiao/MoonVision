@@ -1,8 +1,16 @@
+///|
 let output_dir = "examples/output/bacteria_probe/current/"
+
+///|
 let asset_path = "examples/runtime/bacteria_probe_input.png"
+
+///|
 let roi_threshold = 8
+
+///|
 let write_debug_rasters = false
 
+///|
 struct ProbePreset {
   name : String
   invert_mask : Bool
@@ -27,6 +35,7 @@ struct ProbePreset {
   shrink_max_bbox_area : Int
 } derive(Eq, Show)
 
+///|
 struct ProbeRoi {
   x : Int
   y : Int
@@ -34,6 +43,7 @@ struct ProbeRoi {
   height : Int
 } derive(Eq, Show)
 
+///|
 struct DetectedBox {
   x : Int
   y : Int
@@ -42,6 +52,7 @@ struct DetectedBox {
   area : Int
 } derive(Eq, Show)
 
+///|
 fn min_int(left : Int, right : Int) -> Int {
   if left < right {
     left
@@ -50,6 +61,7 @@ fn min_int(left : Int, right : Int) -> Int {
   }
 }
 
+///|
 fn max_int(left : Int, right : Int) -> Int {
   if left > right {
     left
@@ -58,14 +70,17 @@ fn max_int(left : Int, right : Int) -> Int {
   }
 }
 
+///|
 fn write_rgb_png(path : String, img : @image.RgbImage) -> Unit {
   try! @demoio.write_bytes_to_file(path, @export.encode_rgb_png(img))
 }
 
+///|
 fn write_gray_png(path : String, img : @image.GrayImage) -> Unit {
   try! @demoio.write_bytes_to_file(path, @export.encode_gray_png(img))
 }
 
+///|
 fn crop_gray(img : @image.GrayImage, roi : ProbeRoi) -> @image.GrayImage {
   let cropped = try! @image.gray(roi.width, roi.height)
   for y = 0; y < roi.height; y = y + 1 {
@@ -76,6 +91,7 @@ fn crop_gray(img : @image.GrayImage, roi : ProbeRoi) -> @image.GrayImage {
   cropped
 }
 
+///|
 fn crop_rgb(img : @image.RgbImage, roi : ProbeRoi) -> @image.RgbImage {
   let cropped = try! @image.rgb(roi.width, roi.height)
   for y = 0; y < roi.height; y = y + 1 {
@@ -86,6 +102,7 @@ fn crop_rgb(img : @image.RgbImage, roi : ProbeRoi) -> @image.RgbImage {
   cropped
 }
 
+///|
 fn detect_non_black_bounds(gray : @image.GrayImage) -> ProbeRoi {
   let mut found = false
   let mut min_x = gray.width()
@@ -122,10 +139,10 @@ fn detect_non_black_bounds(gray : @image.GrayImage) -> ProbeRoi {
   if !found {
     return { x: 0, y: 0, width: gray.width(), height: gray.height() }
   }
-
   { x: min_x, y: min_y, width: max_x - min_x + 1, height: max_y - min_y + 1 }
 }
 
+///|
 fn apply_roi_margin(
   roi : ProbeRoi,
   margin_divisor : Int,
@@ -135,8 +152,14 @@ fn apply_roi_margin(
   if margin_divisor <= 0 {
     return roi
   }
-  let inset_x = min_int(max_margin, max_int(min_margin, roi.width / margin_divisor))
-  let inset_y = min_int(max_margin, max_int(min_margin, roi.height / margin_divisor))
+  let inset_x = min_int(
+    max_margin,
+    max_int(min_margin, roi.width / margin_divisor),
+  )
+  let inset_y = min_int(
+    max_margin,
+    max_int(min_margin, roi.height / margin_divisor),
+  )
   let next_x = roi.x + inset_x
   let next_y = roi.y + inset_y
   let next_width = roi.width - inset_x * 2
@@ -148,7 +171,11 @@ fn apply_roi_margin(
   }
 }
 
-fn detect_non_black_roi(gray : @image.GrayImage, preset : ProbePreset) -> ProbeRoi {
+///|
+fn detect_non_black_roi(
+  gray : @image.GrayImage,
+  preset : ProbePreset,
+) -> ProbeRoi {
   apply_roi_margin(
     detect_non_black_bounds(gray),
     preset.roi_margin_divisor,
@@ -157,6 +184,7 @@ fn detect_non_black_roi(gray : @image.GrayImage, preset : ProbePreset) -> ProbeR
   )
 }
 
+///|
 fn roi_svg(width : Int, height : Int, roi : ProbeRoi) -> String {
   "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 " +
   width.to_string() +
@@ -179,7 +207,11 @@ fn roi_svg(width : Int, height : Int, roi : ProbeRoi) -> String {
   "</svg>"
 }
 
-fn preset_mask(contrasted : @image.GrayImage, preset : ProbePreset) -> @image.GrayImage {
+///|
+fn preset_mask(
+  contrasted : @image.GrayImage,
+  preset : ProbePreset,
+) -> @image.GrayImage {
   let base = if preset.name == "dark_adaptive_tight_expanded" {
     try! @ops.adaptive_threshold_mean(contrasted, 5, 7)
   } else {
@@ -190,10 +222,14 @@ fn preset_mask(contrasted : @image.GrayImage, preset : ProbePreset) -> @image.Gr
   } else {
     base
   }
-  let opened = try! @morphology.open_binary(thresholded, radius=preset.open_radius)
+  let opened = try! @morphology.open_binary(
+    thresholded,
+    radius=preset.open_radius,
+  )
   try! @morphology.close_binary(opened, radius=preset.close_radius)
 }
 
+///|
 fn aspect_ratio_x100(width : Int, height : Int) -> Int {
   if width <= 0 || height <= 0 {
     0
@@ -204,6 +240,7 @@ fn aspect_ratio_x100(width : Int, height : Int) -> Int {
   }
 }
 
+///|
 fn fill_ratio_x1000(area : Int, width : Int, height : Int) -> Int {
   let bbox_area = width * height
   if bbox_area <= 0 {
@@ -213,6 +250,7 @@ fn fill_ratio_x1000(area : Int, width : Int, height : Int) -> Int {
   }
 }
 
+///|
 fn touches_roi_edge(
   local_x : Int,
   local_y : Int,
@@ -228,6 +266,7 @@ fn touches_roi_edge(
   local_y + height >= roi_height - edge_margin
 }
 
+///|
 fn filter_boxes(
   components : Array[@components.Component],
   roi : ProbeRoi,
@@ -243,14 +282,14 @@ fn filter_boxes(
       continue
     }
     if touches_roi_edge(
-      bbox.x(),
-      bbox.y(),
-      width,
-      height,
-      roi.width,
-      roi.height,
-      preset.edge_margin,
-    ) {
+        bbox.x(),
+        bbox.y(),
+        width,
+        height,
+        roi.width,
+        roi.height,
+        preset.edge_margin,
+      ) {
       continue
     }
     if aspect_ratio_x100(width, height) > preset.max_aspect_x100 {
@@ -259,18 +298,17 @@ fn filter_boxes(
     if fill_ratio_x1000(area, width, height) < preset.min_fill_x1000 {
       continue
     }
-    boxes.push({
-      x: roi.x + bbox.x(),
-      y: roi.y + bbox.y(),
-      width,
-      height,
-      area,
-    })
+    boxes.push({ x: roi.x + bbox.x(), y: roi.y + bbox.y(), width, height, area })
   }
   boxes
 }
 
-fn boxes_overlap_or_close(left : DetectedBox, right : DetectedBox, gap : Int) -> Bool {
+///|
+fn boxes_overlap_or_close(
+  left : DetectedBox,
+  right : DetectedBox,
+  gap : Int,
+) -> Bool {
   let left_x1 = left.x - gap
   let left_y1 = left.y - gap
   let left_x2 = left.x + left.width + gap
@@ -285,6 +323,7 @@ fn boxes_overlap_or_close(left : DetectedBox, right : DetectedBox, gap : Int) ->
   left_y2 > right_y1
 }
 
+///|
 fn merged_cluster_box(
   boxes : Array[DetectedBox],
   cluster_indices : Array[Int],
@@ -320,6 +359,7 @@ fn merged_cluster_box(
   }
 }
 
+///|
 fn keep_cluster_box(box : DetectedBox, preset : ProbePreset) -> Bool {
   let bbox_area = box.width * box.height
   bbox_area >= preset.min_cluster_bbox_area &&
@@ -327,8 +367,14 @@ fn keep_cluster_box(box : DetectedBox, preset : ProbePreset) -> Bool {
   fill_ratio_x1000(box.area, box.width, box.height) >= preset.min_fill_x1000
 }
 
-fn cluster_boxes(boxes : Array[DetectedBox], preset : ProbePreset) -> Array[DetectedBox] {
-  if preset.merge_gap <= 0 || preset.min_cluster_boxes <= 1 || boxes.length() == 0 {
+///|
+fn cluster_boxes(
+  boxes : Array[DetectedBox],
+  preset : ProbePreset,
+) -> Array[DetectedBox] {
+  if preset.merge_gap <= 0 ||
+    preset.min_cluster_boxes <= 1 ||
+    boxes.length() == 0 {
     return []
   }
   let visited = Array::make(boxes.length(), false)
@@ -366,7 +412,11 @@ fn cluster_boxes(boxes : Array[DetectedBox], preset : ProbePreset) -> Array[Dete
   merged
 }
 
-fn output_boxes(candidate_boxes : Array[DetectedBox], preset : ProbePreset) -> Array[DetectedBox] {
+///|
+fn output_boxes(
+  candidate_boxes : Array[DetectedBox],
+  preset : ProbePreset,
+) -> Array[DetectedBox] {
   let merged_boxes = cluster_boxes(candidate_boxes, preset)
   let raw_boxes = if preset.cluster_only {
     merged_boxes
@@ -416,6 +466,7 @@ fn output_boxes(candidate_boxes : Array[DetectedBox], preset : ProbePreset) -> A
   shrink_boxes
 }
 
+///|
 fn boxes_svg(
   width : Int,
   height : Int,
@@ -423,8 +474,7 @@ fn boxes_svg(
   title : String,
   color : String,
 ) -> String {
-  let mut out =
-    "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 " +
+  let mut out = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 " +
     width.to_string() +
     " " +
     height.to_string() +
@@ -464,6 +514,7 @@ fn boxes_svg(
   out + "</svg>"
 }
 
+///|
 fn boxes_csv(boxes : Array[DetectedBox]) -> String {
   let mut out = "x,y,width,height,area\n"
   for box in boxes {
@@ -482,6 +533,7 @@ fn boxes_csv(boxes : Array[DetectedBox]) -> String {
   out
 }
 
+///|
 fn roi_csv(roi : ProbeRoi) -> String {
   "x,y,width,height\n" +
   roi.x.to_string() +
@@ -494,6 +546,7 @@ fn roi_csv(roi : ProbeRoi) -> String {
   "\n"
 }
 
+///|
 fn presets() -> Array[ProbePreset] {
   [
     {
@@ -959,26 +1012,35 @@ fn presets() -> Array[ProbePreset] {
   ]
 }
 
+///|
 fn main {
   let all_presets = presets()
-  let input = try! @image.rgb_from_png_bytes(try! @demoio.read_bytes_from_file(asset_path))
+  let input = try! @image.rgb_from_png_bytes(
+    try! @demoio.read_bytes_from_file(asset_path),
+  )
   let gray = try! @ops.grayscale(input)
-  let mut cached_dark_small_roi = { x: 0, y: 0, width: gray.width(), height: gray.height() }
+  let mut cached_dark_small_roi = {
+    x: 0,
+    y: 0,
+    width: gray.width(),
+    height: gray.height(),
+  }
   let mut cached_dark_small_boxes = []
   let report_images = []
   let report_lines = [
     "input asset: " + asset_path,
-    "input size: " + input.width().to_string() + "x" + input.height().to_string(),
+    "input size: " +
+    input.width().to_string() +
+    "x" +
+    input.height().to_string(),
     "write_debug_rasters: " + write_debug_rasters.to_string(),
   ]
-
   if write_debug_rasters {
     write_rgb_png(output_dir + "input.png", input)
     write_gray_png(output_dir + "gray.png", gray)
     report_images.push(@export.report_image("input", "input.png"))
     report_images.push(@export.report_image("gray", "gray.png"))
   }
-
   for i = 0; i < all_presets.length(); i = i + 1 {
     let preset = all_presets[i]
     let roi = if preset.reuse_previous_candidates {
@@ -992,30 +1054,39 @@ fn main {
     let roi_overlay_name = preset.name + "_roi_overlay.svg"
     let overlay_name = preset.name + "_overlay.svg"
     let boxes_name = preset.name + "_boxes.csv"
-
     let candidate_boxes = if preset.reuse_previous_candidates {
       cached_dark_small_boxes
     } else {
       let gray_roi = crop_gray(gray, roi)
       let input_roi = crop_rgb(input, roi)
-      let adjusted = try! @ops.adjust_brightness(gray_roi, preset.brightness_delta)
-      let contrasted = try! @ops.adjust_contrast(adjusted, preset.contrast_factor)
+      let adjusted = try! @ops.adjust_brightness(
+        gray_roi,
+        preset.brightness_delta,
+      )
+      let contrasted = try! @ops.adjust_contrast(
+        adjusted,
+        preset.contrast_factor,
+      )
       let mask = preset_mask(contrasted, preset)
       let components = try! @components.connected_components(mask, min_area=1)
       let next_boxes = filter_boxes(components, roi, preset)
       let contrasted_name = preset.name + "_contrasted.png"
       let mask_name = preset.name + "_mask.png"
-
       if write_debug_rasters {
         write_rgb_png(output_dir + input_roi_name, input_roi)
         write_gray_png(output_dir + gray_roi_name, gray_roi)
         write_gray_png(output_dir + contrasted_name, contrasted)
         write_gray_png(output_dir + mask_name, mask)
-        report_images.push(@export.report_image(preset.name + " input roi", input_roi_name))
-        report_images.push(@export.report_image(preset.name + " contrasted", contrasted_name))
-        report_images.push(@export.report_image(preset.name + " mask", mask_name))
+        report_images.push(
+          @export.report_image(preset.name + " input roi", input_roi_name),
+        )
+        report_images.push(
+          @export.report_image(preset.name + " contrasted", contrasted_name),
+        )
+        report_images.push(
+          @export.report_image(preset.name + " mask", mask_name),
+        )
       }
-
       if preset.name == "dark_small_tight" {
         cached_dark_small_roi = roi
         cached_dark_small_boxes = next_boxes
@@ -1036,11 +1107,14 @@ fn main {
         input.height(),
         boxes,
         "MoonVision Bacteria Probe " + preset.name,
-        if preset.invert_mask { "#dc2626" } else { "#2563eb" },
+        if preset.invert_mask {
+          "#dc2626"
+        } else {
+          "#2563eb"
+        },
       ),
     )
     try! @demoio.write_string_to_file(output_dir + boxes_name, boxes_csv(boxes))
-
     report_lines.push(
       preset.name +
       ": boxes=" +
@@ -1073,18 +1147,24 @@ fn main {
       ", height=" +
       roi.height.to_string(),
     )
-    report_images.push(@export.report_image(preset.name + " roi overlay", roi_overlay_name))
-    report_images.push(@export.report_image(preset.name + " overlay", overlay_name))
+    report_images.push(
+      @export.report_image(preset.name + " roi overlay", roi_overlay_name),
+    )
+    report_images.push(
+      @export.report_image(preset.name + " overlay", overlay_name),
+    )
     println("preset=" + preset.name + ",boxes=" + boxes.length().to_string())
   }
-
   try! @demoio.write_string_to_file(
     output_dir + "report.html",
-    @export.html_report("MoonVision Bacteria Probe", report_lines, report_images),
+    @export.html_report(
+      "MoonVision Bacteria Probe", report_lines, report_images,
+    ),
   )
   println("report=" + output_dir + "report.html")
 }
 
+///|
 fn cluster_preset_fixture() -> ProbePreset {
   {
     name: "cluster_fixture",
@@ -1196,9 +1276,7 @@ test "output boxes drops oversized boxes for shrunk route" {
 
 ///|
 test "output boxes expands boxes when scale is above one hundred" {
-  let boxes = [
-    { x: 100, y: 200, width: 100, height: 50, area: 3000 },
-  ]
+  let boxes = [{ x: 100, y: 200, width: 100, height: 50, area: 3000 }]
   let preset = {
     ..cluster_preset_fixture(),
     name: "expanded_fixture",

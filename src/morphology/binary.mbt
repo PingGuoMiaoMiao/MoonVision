@@ -1,3 +1,4 @@
+///|
 fn morph_clamp_coordinate(value : Int, upper_bound : Int) -> Int {
   if value < 0 {
     0
@@ -8,6 +9,7 @@ fn morph_clamp_coordinate(value : Int, upper_bound : Int) -> Int {
   }
 }
 
+///|
 fn morph_sample(
   img : @image.GrayImage,
   x : Int,
@@ -25,18 +27,21 @@ pub(all) enum StructuringElement {
   Cross
 } derive(Eq, Show)
 
+///|
 fn validate_radius(radius : Int) -> Unit raise @image.ImageError {
   if radius < 0 {
     raise @image.InvalidDimensions("morphology radius must not be negative")
   }
 }
 
+///|
 fn validate_iterations(iterations : Int) -> Unit raise @image.ImageError {
   if iterations < 0 {
     raise @image.InvalidDimensions("morphology iterations must not be negative")
   }
 }
 
+///|
 fn in_structuring_element(
   dx : Int,
   dy : Int,
@@ -48,6 +53,7 @@ fn in_structuring_element(
   }
 }
 
+///|
 fn eroded_value(
   img : @image.GrayImage,
   x : Int,
@@ -66,6 +72,7 @@ fn eroded_value(
   b'\xff'
 }
 
+///|
 fn dilated_value(
   img : @image.GrayImage,
   x : Int,
@@ -92,7 +99,7 @@ pub fn erode(
   element? : StructuringElement = Square,
 ) -> @image.GrayImage raise @image.ImageError {
   let out = img.copy()
-  erode_in_place(out, radius=radius, iterations=iterations, element=element)
+  erode_in_place(out, radius~, iterations~, element~)
   out
 }
 
@@ -123,7 +130,7 @@ pub fn dilate(
   element? : StructuringElement = Square,
 ) -> @image.GrayImage raise @image.ImageError {
   let out = img.copy()
-  dilate_in_place(out, radius=radius, iterations=iterations, element=element)
+  dilate_in_place(out, radius~, iterations~, element~)
   out
 }
 
@@ -154,10 +161,10 @@ pub fn open_binary(
   element? : StructuringElement = Square,
 ) -> @image.GrayImage raise @image.ImageError {
   dilate(
-    erode(img, radius=radius, iterations=iterations, element=element),
-    radius=radius,
-    iterations=iterations,
-    element=element,
+    erode(img, radius~, iterations~, element~),
+    radius~,
+    iterations~,
+    element~,
   )
 }
 
@@ -169,10 +176,10 @@ pub fn close_binary(
   element? : StructuringElement = Square,
 ) -> @image.GrayImage raise @image.ImageError {
   erode(
-    dilate(img, radius=radius, iterations=iterations, element=element),
-    radius=radius,
-    iterations=iterations,
-    element=element,
+    dilate(img, radius~, iterations~, element~),
+    radius~,
+    iterations~,
+    element~,
   )
 }
 
@@ -182,12 +189,16 @@ pub fn morphological_gradient(
   radius? : Int = 1,
   element? : StructuringElement = Square,
 ) -> @image.GrayImage raise @image.ImageError {
-  let dilated = dilate(img, radius=radius, element=element)
-  let eroded = erode(img, radius=radius, element=element)
+  let dilated = dilate(img, radius~, element~)
+  let eroded = erode(img, radius~, element~)
   let out = @image.gray(img.width(), img.height())
   for y = 0; y < img.height(); y = y + 1 {
     for x = 0; x < img.width(); x = x + 1 {
-      let value = if dilated.get(x, y) != eroded.get(x, y) { b'\xff' } else { b'\x00' }
+      let value = if dilated.get(x, y) != eroded.get(x, y) {
+        b'\xff'
+      } else {
+        b'\x00'
+      }
       out.set(x, y, value)
     }
   }
@@ -200,7 +211,7 @@ pub fn top_hat(
   radius? : Int = 1,
   element? : StructuringElement = Square,
 ) -> @image.GrayImage raise @image.ImageError {
-  let opened = open_binary(img, radius=radius, element=element)
+  let opened = open_binary(img, radius~, element~)
   let out = @image.gray(img.width(), img.height())
   for y = 0; y < img.height(); y = y + 1 {
     for x = 0; x < img.width(); x = x + 1 {
@@ -221,7 +232,7 @@ pub fn black_hat(
   radius? : Int = 1,
   element? : StructuringElement = Square,
 ) -> @image.GrayImage raise @image.ImageError {
-  let closed = close_binary(img, radius=radius, element=element)
+  let closed = close_binary(img, radius~, element~)
   let out = @image.gray(img.width(), img.height())
   for y = 0; y < img.height(); y = y + 1 {
     for x = 0; x < img.width(); x = x + 1 {

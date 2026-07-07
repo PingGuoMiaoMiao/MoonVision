@@ -1,14 +1,20 @@
+///|
 let output_dir = "examples/output/"
+
+///|
 let asset_path = "examples/assets/object_counting_input.png"
 
+///|
 fn write_rgb_png(path : String, img : @image.RgbImage) -> Unit {
   try! @demoio.write_bytes_to_file(path, @export.encode_rgb_png(img))
 }
 
+///|
 fn write_gray_png(path : String, img : @image.GrayImage) -> Unit {
   try! @demoio.write_bytes_to_file(path, @export.encode_gray_png(img))
 }
 
+///|
 fn contour_mask(
   width : Int,
   height : Int,
@@ -25,6 +31,7 @@ fn contour_mask(
   mask
 }
 
+///|
 fn largest_contour_area(contours : Array[@components.Contour]) -> Int {
   let mut largest = 0
   for contour in contours {
@@ -36,6 +43,7 @@ fn largest_contour_area(contours : Array[@components.Contour]) -> Int {
   largest
 }
 
+///|
 fn count_outer_contours(contours : Array[@components.Contour]) -> Int {
   let mut count = 0
   for contour in contours {
@@ -47,6 +55,7 @@ fn count_outer_contours(contours : Array[@components.Contour]) -> Int {
   count
 }
 
+///|
 fn count_hole_contours(contours : Array[@components.Contour]) -> Int {
   let mut count = 0
   for contour in contours {
@@ -58,6 +67,7 @@ fn count_hole_contours(contours : Array[@components.Contour]) -> Int {
   count
 }
 
+///|
 fn longest_traced_contour(contours : Array[@components.Contour]) -> Int {
   let mut longest = 0
   for contour in contours {
@@ -69,6 +79,7 @@ fn longest_traced_contour(contours : Array[@components.Contour]) -> Int {
   longest
 }
 
+///|
 fn largest_approx_vertex_count(
   contours : Array[@components.Contour],
   epsilon : Double,
@@ -83,6 +94,7 @@ fn largest_approx_vertex_count(
   largest
 }
 
+///|
 fn largest_hull_vertex_count(contours : Array[@components.Contour]) -> Int {
   let mut largest = 0
   for contour in contours {
@@ -94,6 +106,7 @@ fn largest_hull_vertex_count(contours : Array[@components.Contour]) -> Int {
   largest
 }
 
+///|
 fn widest_rotated_rect_x100(contours : Array[@components.Contour]) -> Int {
   let mut widest = 0
   for contour in contours {
@@ -105,6 +118,7 @@ fn widest_rotated_rect_x100(contours : Array[@components.Contour]) -> Int {
   widest
 }
 
+///|
 fn max_solidity_x1000(contours : Array[@components.Contour]) -> Int {
   let mut strongest = 0
   for contour in contours {
@@ -116,8 +130,11 @@ fn max_solidity_x1000(contours : Array[@components.Contour]) -> Int {
   strongest
 }
 
+///|
 fn main {
-  let input = try! @image.rgb_from_png_bytes(try! @demoio.read_bytes_from_file(asset_path))
+  let input = try! @image.rgb_from_png_bytes(
+    try! @demoio.read_bytes_from_file(asset_path),
+  )
   let gray = try! @ops.grayscale(input)
   let baseline_binary = try! @ops.threshold(gray, 120)
   let smoothed = try! @filter.median_blur(gray, radius=1)
@@ -131,14 +148,12 @@ fn main {
   let outer_contours = count_outer_contours(contours)
   let hole_contours = count_hole_contours(contours)
   let contour_image = contour_mask(binary.width(), binary.height(), contours)
-
   let input_name = "object_counting_input.png"
   let baseline_binary_name = "object_counting_binary_v1_0.png"
   let binary_name = "object_counting_binary.png"
   let contour_name = "object_counting_contours.png"
   let overlay_name = "object_counting_overlay.svg"
   let report_name = "object_counting_report.html"
-
   write_rgb_png(output_dir + input_name, input)
   write_gray_png(output_dir + baseline_binary_name, baseline_binary)
   write_gray_png(output_dir + binary_name, binary)
@@ -162,11 +177,14 @@ fn main {
         "v1.3 hole contours: " + hole_contours.to_string(),
         "v1.4 max approx vertices (epsilon=1.0): " +
         largest_approx_vertex_count(contours, 1.0).to_string(),
-        "v1.4 max hull vertices: " + largest_hull_vertex_count(contours).to_string(),
-        "v1.4 widest rotated rect x100: " + widest_rotated_rect_x100(contours).to_string(),
+        "v1.4 max hull vertices: " +
+        largest_hull_vertex_count(contours).to_string(),
+        "v1.4 widest rotated rect x100: " +
+        widest_rotated_rect_x100(contours).to_string(),
         "v1.4 max solidity x1000: " + max_solidity_x1000(contours).to_string(),
         "largest contour area: " + largest_contour_area(contours).to_string(),
-        "longest traced contour path: " + longest_traced_contour(contours).to_string(),
+        "longest traced contour path: " +
+        longest_traced_contour(contours).to_string(),
         "input asset: " + asset_path,
         "minimum area filter: 20 pixels",
       ],
@@ -179,7 +197,6 @@ fn main {
       ],
     ),
   )
-
   println("v1.0 detected objects: " + baseline_components.length().to_string())
   println("v1.1 detected objects: " + components.length().to_string())
   println("v1.3 all contours: " + contours.length().to_string())
@@ -189,8 +206,15 @@ fn main {
     "v1.4 max approx vertices (epsilon=1.0): " +
     largest_approx_vertex_count(contours, 1.0).to_string(),
   )
-  println("v1.4 max hull vertices: " + largest_hull_vertex_count(contours).to_string())
-  println("v1.4 widest rotated rect x100: " + widest_rotated_rect_x100(contours).to_string())
-  println("v1.4 max solidity x1000: " + max_solidity_x1000(contours).to_string())
+  println(
+    "v1.4 max hull vertices: " + largest_hull_vertex_count(contours).to_string(),
+  )
+  println(
+    "v1.4 widest rotated rect x100: " +
+    widest_rotated_rect_x100(contours).to_string(),
+  )
+  println(
+    "v1.4 max solidity x1000: " + max_solidity_x1000(contours).to_string(),
+  )
   println("report: " + output_dir + report_name)
 }

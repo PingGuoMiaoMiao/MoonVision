@@ -42,10 +42,12 @@ extern "C" fn fclose_ffi(file : Handler) -> Int = "moonvision_demo_io_fclose_ffi
 ///|
 extern "C" fn get_error_message_ffi() -> Bytes = "moonvision_demo_io_get_error_message"
 
+///|
 fn get_error_message() -> String {
   utf8_bytes_to_mbt_string(get_error_message_ffi())
 }
 
+///|
 fn read_bytes_from_file_internal(path : String) -> Bytes raise IOError {
   let file = fopen_ffi(mbt_string_to_utf8_bytes(path, true), b"rb\x00")
   guard is_null(file) == 0 else { raise IOError(get_error_message()) }
@@ -60,6 +62,7 @@ fn read_bytes_from_file_internal(path : String) -> Bytes raise IOError {
   bytes
 }
 
+///|
 fn write_bytes_to_file_internal(
   path : String,
   content : Bytes,
@@ -74,6 +77,7 @@ fn write_bytes_to_file_internal(
   guard fclose_ffi(file) == 0 else { raise IOError(get_error_message()) }
 }
 
+///|
 fn write_string_to_file_internal(
   path : String,
   content : String,
@@ -81,6 +85,7 @@ fn write_string_to_file_internal(
   write_bytes_to_file_internal(path, mbt_string_to_utf8_bytes(content, false))
 }
 
+///|
 fn utf8_bytes_to_mbt_string(bytes : Bytes) -> String {
   let res : Array[Char] = []
   let len = bytes.length()

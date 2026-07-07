@@ -17,7 +17,12 @@ pub fn rgb_pixel(r : Byte, g : Byte, b : Byte) -> Rgb {
   { r, g, b }
 }
 
-fn RgbImage::rgb_index_of(self : RgbImage, x : Int, y : Int) -> Int raise ImageError {
+///|
+fn RgbImage::rgb_index_of(
+  self : RgbImage,
+  x : Int,
+  y : Int,
+) -> Int raise ImageError {
   if x < 0 || y < 0 || x >= self.width || y >= self.height {
     raise OutOfBounds(x, y)
   }

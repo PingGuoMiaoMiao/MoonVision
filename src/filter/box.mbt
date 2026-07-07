@@ -1,3 +1,4 @@
+///|
 fn uniform_kernel_values(size : Int) -> Array[Int] {
   Array::make(size * size, 1)
 }

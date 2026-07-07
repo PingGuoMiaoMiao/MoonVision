@@ -1,3 +1,4 @@
+///|
 fn binomial_row(order : Int) -> Array[Int] {
   let row = Array::make(order + 1, 1)
   for i = 1; i < order; i = i + 1 {
@@ -6,7 +7,10 @@ fn binomial_row(order : Int) -> Array[Int] {
   row
 }
 
-fn gaussian_kernel_for_radius(radius : Int) -> IntKernel raise @image.ImageError {
+///|
+fn gaussian_kernel_for_radius(
+  radius : Int,
+) -> IntKernel raise @image.ImageError {
   if radius < 0 {
     raise @image.InvalidDimensions("gaussian blur radius must not be negative")
   }
@@ -22,7 +26,7 @@ fn gaussian_kernel_for_radius(radius : Int) -> IntKernel raise @image.ImageError
       divisor = divisor + weight
     }
   }
-  int_kernel(size, size, values, divisor=divisor)
+  int_kernel(size, size, values, divisor~)
 }
 
 ///|

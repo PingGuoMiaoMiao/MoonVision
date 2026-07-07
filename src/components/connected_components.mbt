@@ -1,3 +1,4 @@
+///|
 struct BoundingBox {
   x : Int
   y : Int
@@ -5,12 +6,14 @@ struct BoundingBox {
   height : Int
 } derive(Eq, Show)
 
+///|
 struct Component {
   label_id : Int
   bbox : BoundingBox
   area : Int
 } derive(Eq, Show)
 
+///|
 fn find_root(parents : Array[Int], label : Int) -> Int {
   let mut root = label
   while parents[root] != root {
@@ -25,7 +28,13 @@ fn find_root(parents : Array[Int], label : Int) -> Int {
   root
 }
 
-fn union_labels(parents : Array[Int], ranks : Array[Int], left : Int, right : Int) -> Unit {
+///|
+fn union_labels(
+  parents : Array[Int],
+  ranks : Array[Int],
+  left : Int,
+  right : Int,
+) -> Unit {
   let left_root = find_root(parents, left)
   let right_root = find_root(parents, right)
   if left_root == right_root {
@@ -41,10 +50,16 @@ fn union_labels(parents : Array[Int], ranks : Array[Int], left : Int, right : In
   }
 }
 
-fn pixel_is_foreground(img : @image.GrayImage, x : Int, y : Int) -> Bool raise @image.ImageError {
+///|
+fn pixel_is_foreground(
+  img : @image.GrayImage,
+  x : Int,
+  y : Int,
+) -> Bool raise @image.ImageError {
   img.get(x, y) != b'\x00'
 }
 
+///|
 fn scan_index(width : Int, x : Int, y : Int) -> Int {
   y * width + x
 }
@@ -55,20 +70,19 @@ pub fn connected_components(
   min_area? : Int = 1,
 ) -> Array[Component] raise @image.ImageError {
   if min_area < 1 {
-    raise @image.InvalidDimensions("min_area must be greater than or equal to one")
+    raise @image.InvalidDimensions(
+      "min_area must be greater than or equal to one",
+    )
   }
-
   let labels = Array::make(img.pixel_count(), 0)
   let parents = [0]
   let ranks = [0]
   let mut next_label = 1
-
   for y = 0; y < img.height(); y = y + 1 {
     for x = 0; x < img.width(); x = x + 1 {
       if !pixel_is_foreground(img, x, y) {
         continue
       }
-
       let neighbor_labels = []
       if x > 0 {
         let left = labels[scan_index(img.width(), x - 1, y)]
@@ -94,7 +108,6 @@ pub fn connected_components(
           }
         }
       }
-
       let index = scan_index(img.width(), x, y)
       if neighbor_labels.length() == 0 {
         labels[index] = next_label
@@ -110,7 +123,6 @@ pub fn connected_components(
       }
     }
   }
-
   let root_to_component = Array::make(next_label, -1)
   let label_ids = []
   let min_xs = []
@@ -118,7 +130,6 @@ pub fn connected_components(
   let max_xs = []
   let max_ys = []
   let areas = []
-
   for y = 0; y < img.height(); y = y + 1 {
     for x = 0; x < img.width(); x = x + 1 {
       let index = scan_index(img.width(), x, y)
@@ -154,7 +165,6 @@ pub fn connected_components(
       }
     }
   }
-
   let components = []
   for i = 0; i < label_ids.length(); i = i + 1 {
     if areas[i] >= min_area {

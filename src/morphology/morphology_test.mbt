@@ -1,93 +1,22 @@
+///|
 fn binary_noise() -> @image.GrayImage {
-  try! @image.gray_from_array(
-    5,
-    5,
-    [
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\xFF',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\xFF',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-    ],
-  )
+  try! @image.gray_from_array(5, 5, [
+    b'\x00', b'\x00', b'\x00', b'\x00', b'\x00', b'\x00', b'\xFF', b'\x00', b'\x00',
+    b'\x00', b'\x00', b'\x00', b'\xFF', b'\x00', b'\x00', b'\x00', b'\x00', b'\x00',
+    b'\x00', b'\x00', b'\x00', b'\x00', b'\x00', b'\x00', b'\x00',
+  ])
 }
 
+///|
 fn binary_hole() -> @image.GrayImage {
-  try! @image.gray_from_array(
-    7,
-    7,
-    [
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\xFF',
-      b'\xFF',
-      b'\xFF',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\xFF',
-      b'\x00',
-      b'\xFF',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\xFF',
-      b'\xFF',
-      b'\xFF',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-    ],
-  )
+  try! @image.gray_from_array(7, 7, [
+    b'\x00', b'\x00', b'\x00', b'\x00', b'\x00', b'\x00', b'\x00', b'\x00', b'\x00',
+    b'\x00', b'\x00', b'\x00', b'\x00', b'\x00', b'\x00', b'\x00', b'\xFF', b'\xFF',
+    b'\xFF', b'\x00', b'\x00', b'\x00', b'\x00', b'\xFF', b'\x00', b'\xFF', b'\x00',
+    b'\x00', b'\x00', b'\x00', b'\xFF', b'\xFF', b'\xFF', b'\x00', b'\x00', b'\x00',
+    b'\x00', b'\x00', b'\x00', b'\x00', b'\x00', b'\x00', b'\x00', b'\x00', b'\x00',
+    b'\x00', b'\x00', b'\x00', b'\x00',
+  ])
 }
 
 ///|
@@ -140,21 +69,9 @@ test "iterations match repeated dilation" {
 
 ///|
 test "cross and square structuring elements differ on diagonal fixture" {
-  let img = try! @image.gray_from_array(
-    3,
-    3,
-    [
-      b'\xff',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-    ],
-  )
+  let img = try! @image.gray_from_array(3, 3, [
+    b'\xff', b'\x00', b'\x00', b'\x00', b'\x00', b'\x00', b'\x00', b'\x00', b'\x00',
+  ])
   let square = try! dilate(img, radius=1, element=Square)
   let cross = try! dilate(img, radius=1, element=Cross)
   inspect(try! square.get(1, 1), content="b'\\xFF'")

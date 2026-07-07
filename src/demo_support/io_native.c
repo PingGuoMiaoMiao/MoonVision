@@ -4,7 +4,6 @@ extern "C" {
 
 #include "moonbit.h"
 
-typedef unsigned long long size_t;
 typedef struct _iobuf FILE;
 
 #ifndef NULL

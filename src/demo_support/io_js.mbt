@@ -36,6 +36,7 @@ extern "js" fn get_error_message_ffi() -> String =
   #|   return globalThis.moonvisionDemoIoError || '';
   #| }
 
+///|
 fn read_bytes_from_file_internal(path : String) -> Bytes raise IOError {
   if read_file_ffi(path) == -1 {
     raise IOError(get_error_message_ffi())
@@ -43,6 +44,7 @@ fn read_bytes_from_file_internal(path : String) -> Bytes raise IOError {
   get_file_content_ffi()
 }
 
+///|
 fn write_bytes_to_file_internal(
   path : String,
   content : Bytes,
@@ -52,6 +54,7 @@ fn write_bytes_to_file_internal(
   }
 }
 
+///|
 fn write_string_to_file_internal(
   path : String,
   content : String,

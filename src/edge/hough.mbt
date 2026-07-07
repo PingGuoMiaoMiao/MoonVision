@@ -1,13 +1,16 @@
+///|
 struct HoughLine {
   rho : Int
   theta_bucket : Int
   votes : Int
 } derive(Eq, Show)
 
+///|
 fn hough_line(rho : Int, theta_bucket : Int, votes : Int) -> HoughLine {
   { rho, theta_bucket, votes }
 }
 
+///|
 fn hough_better(left : HoughLine, right : HoughLine) -> Bool {
   left.votes > right.votes ||
   (left.votes == right.votes && left.theta_bucket < right.theta_bucket) ||
@@ -18,6 +21,7 @@ fn hough_better(left : HoughLine, right : HoughLine) -> Bool {
   )
 }
 
+///|
 fn push_sorted_hough_line(lines : Array[HoughLine], line : HoughLine) -> Unit {
   lines.push(line)
   let mut i = lines.length() - 1
@@ -29,6 +33,7 @@ fn push_sorted_hough_line(lines : Array[HoughLine], line : HoughLine) -> Unit {
   }
 }
 
+///|
 fn add_hough_bucket(
   lines : Array[HoughLine],
   accumulator : Array[Int],
@@ -39,7 +44,10 @@ fn add_hough_bucket(
   for i = 0; i < accumulator.length(); i = i + 1 {
     let votes = accumulator[i]
     if votes >= vote_threshold {
-      push_sorted_hough_line(lines, hough_line(i - rho_offset, theta_bucket, votes))
+      push_sorted_hough_line(
+        lines,
+        hough_line(i - rho_offset, theta_bucket, votes),
+      )
     }
   }
 }
@@ -59,7 +67,6 @@ pub fn hough_lines(
   if max_lines == 0 {
     return []
   }
-
   let width = edges.width()
   let height = edges.height()
   let vertical = Array::make(width, 0)
@@ -67,7 +74,6 @@ pub fn hough_lines(
   let diag_down = Array::make(width + height - 1, 0)
   let diag_up = Array::make(width + height - 1, 0)
   let diag_up_offset = height - 1
-
   for y = 0; y < height; y = y + 1 {
     for x = 0; x < width; x = x + 1 {
       if edges.get(x, y) == b'\x00' {
@@ -79,13 +85,11 @@ pub fn hough_lines(
       diag_up[x - y + diag_up_offset] = diag_up[x - y + diag_up_offset] + 1
     }
   }
-
   let lines = []
   add_hough_bucket(lines, vertical, 0, 0, vote_threshold)
   add_hough_bucket(lines, diag_down, 45, 0, vote_threshold)
   add_hough_bucket(lines, horizontal, 90, 0, vote_threshold)
   add_hough_bucket(lines, diag_up, 135, diag_up_offset, vote_threshold)
-
   if lines.length() <= max_lines {
     return lines
   }

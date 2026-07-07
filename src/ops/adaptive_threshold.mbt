@@ -1,3 +1,4 @@
+///|
 fn validate_block_size(block_size : Int) -> Unit raise @image.ImageError {
   if block_size <= 1 {
     raise @image.InvalidDimensions(
@@ -9,6 +10,7 @@ fn validate_block_size(block_size : Int) -> Unit raise @image.ImageError {
   }
 }
 
+///|
 fn clamp_coordinate(value : Int, upper_bound : Int) -> Int {
   if value < 0 {
     0
@@ -19,10 +21,12 @@ fn clamp_coordinate(value : Int, upper_bound : Int) -> Int {
   }
 }
 
+///|
 fn integral_index(stride : Int, x : Int, y : Int) -> Int {
   y * stride + x
 }
 
+///|
 fn replicated_integral_image(
   img : @image.GrayImage,
   radius : Int,
@@ -31,7 +35,6 @@ fn replicated_integral_image(
   let padded_height = img.height() + radius * 2
   let stride = padded_width + 1
   let integral = FixedArray::make(stride * (padded_height + 1), 0)
-
   for py = 0; py < padded_height; py = py + 1 {
     for px = 0; px < padded_width; px = px + 1 {
       let source_x = clamp_coordinate(px - radius, img.width())
@@ -43,12 +46,16 @@ fn replicated_integral_image(
       let left = integral_index(stride, out_x - 1, out_y)
       let up = integral_index(stride, out_x, out_y - 1)
       let diagonal = integral_index(stride, out_x - 1, out_y - 1)
-      integral[current] = value + integral[left] + integral[up] - integral[diagonal]
+      integral[current] = value +
+        integral[left] +
+        integral[up] -
+        integral[diagonal]
     }
   }
   integral
 }
 
+///|
 fn integral_sum(
   integral : FixedArray[Int],
   stride : Int,
@@ -75,7 +82,6 @@ pub fn adaptive_threshold_mean(
   let padded_width = img.width() + radius * 2
   let stride = padded_width + 1
   let integral = replicated_integral_image(img, radius)
-
   for y = 0; y < img.height(); y = y + 1 {
     for x = 0; x < img.width(); x = x + 1 {
       let local_sum = integral_sum(
@@ -95,6 +101,5 @@ pub fn adaptive_threshold_mean(
       out.set(x, y, next)
     }
   }
-
   out
 }

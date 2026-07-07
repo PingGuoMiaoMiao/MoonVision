@@ -10,10 +10,7 @@ test "gray image construction and pixel access" {
 ///|
 test "gray image rejects bad buffer length" {
   let err = try? gray_from_array(2, 2, [b'\x01'])
-  inspect(
-    err,
-    content="Err(InvalidBufferLength(4, 1))",
-  )
+  inspect(err, content="Err(InvalidBufferLength(4, 1))")
 }
 
 ///|
@@ -26,6 +23,7 @@ test "rgb image stores and reads triples" {
   inspect(pixel.b(), content="b'\\x30'")
 }
 
+///|
 fn fixture_png_chunk(chunk_type : Bytes, data : Bytes) -> Bytes {
   let len = data.length()
   let len_bytes = FixedArray::make(4, b'\x00')
@@ -51,6 +49,7 @@ fn fixture_png_chunk(chunk_type : Bytes, data : Bytes) -> Bytes {
   Bytes::from_array(buf)
 }
 
+///|
 fn concat_fixture_bytes(parts : Array[Bytes]) -> Bytes {
   let total = parts.fold(init=0, fn(acc, part) { acc + part.length() })
   let buf = FixedArray::make(total, b'\x00')
@@ -62,6 +61,7 @@ fn concat_fixture_bytes(parts : Array[Bytes]) -> Bytes {
   Bytes::from_array(buf)
 }
 
+///|
 fn fixture_png_2x2() -> Bytes {
   let ihdr = b"\x00\x00\x00\x02\x00\x00\x00\x02\x08\x06\x00\x00\x00"
   let raw = b"\x00\xFF\x00\x00\xFF\x00\xFF\x00\xFF\x00\x00\x00\xFF\xFF\xFF\xFF\xFF\xFF"
@@ -79,22 +79,17 @@ test "png decoding adapts RGBA data to rgb image" {
   let img = try! rgb_from_png_bytes(fixture_png_2x2())
   inspect(img.width(), content="2")
   inspect(img.height(), content="2")
-  inspect(img.to_array(), content="[b'\\xFF', b'\\x00', b'\\x00', b'\\x00', b'\\xFF', b'\\x00', b'\\x00', b'\\x00', b'\\xFF', b'\\xFF', b'\\xFF', b'\\xFF']")
+  inspect(
+    img.to_array(),
+    content="[b'\\xFF', b'\\x00', b'\\x00', b'\\x00', b'\\xFF', b'\\x00', b'\\x00', b'\\x00', b'\\xFF', b'\\xFF', b'\\xFF', b'\\xFF']",
+  )
 }
 
+///|
 fn transform_fixture_gray() -> GrayImage {
-  try! gray_from_array(
-    2,
-    3,
-    [
-      b'\x01',
-      b'\x02',
-      b'\x03',
-      b'\x04',
-      b'\x05',
-      b'\x06',
-    ],
-  )
+  try! gray_from_array(2, 3, [
+    b'\x01', b'\x02', b'\x03', b'\x04', b'\x05', b'\x06',
+  ])
 }
 
 ///|
@@ -105,7 +100,6 @@ test "gray transforms resize flip and rotate predictably" {
   let flipped_v = try! flip_vertical(img)
   let rotated_cw = try! rotate90_cw(img)
   let rotated_ccw = try! rotate90_ccw(img)
-
   inspect(
     resized.to_array(),
     content="[b'\\x01', b'\\x01', b'\\x02', b'\\x02', b'\\x03', b'\\x03', b'\\x04', b'\\x04', b'\\x05', b'\\x05', b'\\x06', b'\\x06']",
@@ -130,14 +124,9 @@ test "gray transforms resize flip and rotate predictably" {
 
 ///|
 test "bilinear resize preserves dimensions and interpolates values" {
-  let img = try! gray_from_array(
-    2,
-    2,
-    [b'\x00', b'\x64', b'\x96', b'\xfa'],
-  )
+  let img = try! gray_from_array(2, 2, [b'\x00', b'\x64', b'\x96', b'\xfa'])
   let same = try! resize_bilinear(img, 2, 2)
   inspect(same.to_array(), content="[b'\\x00', b'\\x64', b'\\x96', b'\\xFA']")
-
   let resized = try! resize_bilinear(img, 3, 3)
   inspect(
     resized.to_array(),

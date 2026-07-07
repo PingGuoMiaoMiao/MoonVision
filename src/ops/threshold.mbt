@@ -1,3 +1,4 @@
+///|
 fn ensure_threshold_in_range(threshold : Int) -> Unit raise @image.ImageError {
   if threshold < 0 || threshold > 255 {
     raise @image.InvalidDimensions("threshold must be in the range 0..255")
@@ -12,7 +13,7 @@ pub fn threshold(
   low? : Byte = b'\x00',
 ) -> @image.GrayImage raise @image.ImageError {
   let out = img.copy()
-  threshold_in_place(out, threshold, high=high, low=low)
+  threshold_in_place(out, threshold, high~, low~)
   out
 }
 

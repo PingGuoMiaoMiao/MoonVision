@@ -4,11 +4,13 @@ pub enum ContourKind {
   Hole
 } derive(Eq, Show)
 
+///|
 struct Point {
   x : Int
   y : Int
 } derive(Eq, Show)
 
+///|
 struct Contour {
   points : Array[Point]
   area : Int
@@ -18,6 +20,7 @@ struct Contour {
   parent_index : Int?
 } derive(Eq, Show)
 
+///|
 struct RotatedRect {
   center_x : Double
   center_y : Double
@@ -26,6 +29,7 @@ struct RotatedRect {
   angle_deg : Double
 } derive(Eq, Show)
 
+///|
 priv struct RegionData {
   mask : Array[Bool]
   seed : Point
@@ -33,6 +37,7 @@ priv struct RegionData {
   bbox : BoundingBox
 }
 
+///|
 priv struct LocalRegionData {
   mask : Array[Bool]
   seed : Point
@@ -40,6 +45,7 @@ priv struct LocalRegionData {
   bbox : BoundingBox
 }
 
+///|
 priv struct ContourDraft {
   points : Array[Point]
   area : Int
@@ -49,6 +55,7 @@ priv struct ContourDraft {
   seed : Point
 }
 
+///|
 fn contour_directions() -> Array[Point] {
   [
     { x: 0, y: -1 },
@@ -62,21 +69,19 @@ fn contour_directions() -> Array[Point] {
   ]
 }
 
+///|
 fn orthogonal_directions() -> Array[Point] {
-  [
-    { x: 0, y: -1 },
-    { x: 1, y: 0 },
-    { x: 0, y: 1 },
-    { x: -1, y: 0 },
-  ]
+  [{ x: 0, y: -1 }, { x: 1, y: 0 }, { x: 0, y: 1 }, { x: -1, y: 0 }]
 }
 
+///|
 fn validate_connectivity(connectivity : Int) -> Unit raise @image.ImageError {
   if connectivity != 4 && connectivity != 8 {
     raise @image.InvalidDimensions("contour connectivity must be either 4 or 8")
   }
 }
 
+///|
 fn dual_connectivity(connectivity : Int) -> Int {
   if connectivity == 4 {
     8
@@ -85,14 +90,17 @@ fn dual_connectivity(connectivity : Int) -> Int {
   }
 }
 
+///|
 fn contour_index(width : Int, x : Int, y : Int) -> Int {
   y * width + x
 }
 
+///|
 fn contour_in_bounds(img : @image.GrayImage, x : Int, y : Int) -> Bool {
   x >= 0 && y >= 0 && x < img.width() && y < img.height()
 }
 
+///|
 fn bbox_contains_point(bbox : BoundingBox, point : Point) -> Bool {
   point.x >= bbox.x &&
   point.y >= bbox.y &&
@@ -100,10 +108,12 @@ fn bbox_contains_point(bbox : BoundingBox, point : Point) -> Bool {
   point.y < bbox.y + bbox.height
 }
 
+///|
 fn bbox_area(bbox : BoundingBox) -> Int {
   bbox.width * bbox.height
 }
 
+///|
 fn contour_foreground(
   img : @image.GrayImage,
   x : Int,
@@ -112,10 +122,17 @@ fn contour_foreground(
   img.get(x, y) != b'\x00'
 }
 
-fn contour_mask_foreground(mask : Array[Bool], width : Int, x : Int, y : Int) -> Bool {
+///|
+fn contour_mask_foreground(
+  mask : Array[Bool],
+  width : Int,
+  x : Int,
+  y : Int,
+) -> Bool {
   mask[contour_index(width, x, y)]
 }
 
+///|
 fn contour_neighbors(connectivity : Int) -> Array[Point] {
   if connectivity == 4 {
     [{ x: 0, y: -1 }, { x: -1, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 1 }]
@@ -133,6 +150,7 @@ fn contour_neighbors(connectivity : Int) -> Array[Point] {
   }
 }
 
+///|
 fn next_boundary_direction(
   boundary_mask : Array[Bool],
   width : Int,
@@ -156,11 +174,7 @@ fn next_boundary_direction(
         return direction
       }
       match previous {
-        Some(prev) => {
-          if nx != prev.x || ny != prev.y {
-            return direction
-          }
-        }
+        Some(prev) => if nx != prev.x || ny != prev.y { return direction }
         None => return direction
       }
     }
@@ -168,6 +182,7 @@ fn next_boundary_direction(
   -1
 }
 
+///|
 fn trace_boundary_points(
   boundary_mask : Array[Bool],
   width : Int,
@@ -186,24 +201,16 @@ fn trace_boundary_points(
   // `v1.3` now traces one boundary at a time so hierarchy can be reconstructed.
   while steps < step_budget {
     let direction = next_boundary_direction(
-      boundary_mask,
-      width,
-      height,
-      current,
-      previous,
-      start,
-      incoming_direction,
+      boundary_mask, width, height, current, previous, start, incoming_direction,
     )
     if direction == -1 {
       break
     }
-
     let delta = directions[direction]
     let next = { x: current.x + delta.x, y: current.y + delta.y }
     if next.x == start.x && next.y == start.y && points.length() > 1 {
       break
     }
-
     points.push(next)
     previous = Some(current)
     current = next
@@ -213,6 +220,7 @@ fn trace_boundary_points(
   points
 }
 
+///|
 fn first_true(mask : Array[Bool], width : Int, height : Int) -> Point? {
   for y = 0; y < height; y = y + 1 {
     for x = 0; x < width; x = x + 1 {
@@ -224,6 +232,7 @@ fn first_true(mask : Array[Bool], width : Int, height : Int) -> Point? {
   None
 }
 
+///|
 fn build_contour_draft(
   boundary_mask : Array[Bool],
   width : Int,
@@ -235,12 +244,20 @@ fn build_contour_draft(
   seed : Point,
 ) -> ContourDraft {
   let points = match first_true(boundary_mask, width, height) {
-    Some(start) => trace_boundary_points(boundary_mask, width, height, start, perimeter + area * 8 + 8)
+    Some(start) =>
+      trace_boundary_points(
+        boundary_mask,
+        width,
+        height,
+        start,
+        perimeter + area * 8 + 8,
+      )
     None => [seed]
   }
   { points, area, perimeter, bbox, kind, seed }
 }
 
+///|
 fn collect_foreground_region(
   img : @image.GrayImage,
   visited : Array[Bool],
@@ -253,21 +270,18 @@ fn collect_foreground_region(
   let region_mask = Array::make(img.pixel_count(), false)
   visited[contour_index(img.width(), start_x, start_y)] = true
   region_mask[contour_index(img.width(), start_x, start_y)] = true
-
   let traversal_neighbors = contour_neighbors(connectivity)
   let mut min_x = start_x
   let mut min_y = start_y
   let mut max_x = start_x
   let mut max_y = start_y
   let mut area = 0
-
   while stack_xs.length() > 0 {
     let last = stack_xs.length() - 1
     let x = stack_xs[last]
     let y = stack_ys[last]
     ignore(stack_xs.pop())
     ignore(stack_ys.pop())
-
     area = area + 1
     if x < min_x {
       min_x = x
@@ -281,7 +295,6 @@ fn collect_foreground_region(
     if y > max_y {
       max_y = y
     }
-
     for delta in traversal_neighbors {
       let nx = x + delta.x
       let ny = y + delta.y
@@ -300,7 +313,6 @@ fn collect_foreground_region(
       }
     }
   }
-
   {
     mask: region_mask,
     seed: { x: start_x, y: start_y },
@@ -314,10 +326,8 @@ fn collect_foreground_region(
   }
 }
 
-fn local_component_mask(
-  region : RegionData,
-  image_width : Int,
-) -> Array[Bool] {
+///|
+fn local_component_mask(region : RegionData, image_width : Int) -> Array[Bool] {
   let local_mask = Array::make(region.bbox.width * region.bbox.height, false)
   for y = 0; y < region.bbox.height; y = y + 1 {
     for x = 0; x < region.bbox.width; x = x + 1 {
@@ -334,6 +344,7 @@ fn local_component_mask(
   local_mask
 }
 
+///|
 fn flood_local_background_region(
   blocked_mask : Array[Bool],
   visited : Array[Bool],
@@ -348,21 +359,18 @@ fn flood_local_background_region(
   let region_mask = Array::make(width * height, false)
   visited[contour_index(width, start_x, start_y)] = true
   region_mask[contour_index(width, start_x, start_y)] = true
-
   let neighbors = contour_neighbors(connectivity)
   let mut min_x = start_x
   let mut min_y = start_y
   let mut max_x = start_x
   let mut max_y = start_y
   let mut area = 0
-
   while stack_xs.length() > 0 {
     let last = stack_xs.length() - 1
     let x = stack_xs[last]
     let y = stack_ys[last]
     ignore(stack_xs.pop())
     ignore(stack_ys.pop())
-
     area = area + 1
     if x < min_x {
       min_x = x
@@ -376,7 +384,6 @@ fn flood_local_background_region(
     if y > max_y {
       max_y = y
     }
-
     for delta in neighbors {
       let nx = x + delta.x
       let ny = y + delta.y
@@ -393,7 +400,6 @@ fn flood_local_background_region(
       stack_ys.push(ny)
     }
   }
-
   {
     mask: region_mask,
     seed: { x: start_x, y: start_y },
@@ -407,6 +413,7 @@ fn flood_local_background_region(
   }
 }
 
+///|
 fn mark_external_background(
   local_mask : Array[Bool],
   width : Int,
@@ -415,41 +422,39 @@ fn mark_external_background(
 ) -> Array[Bool] {
   let visited = Array::make(width * height, false)
   for x = 0; x < width; x = x + 1 {
-    if !local_mask[contour_index(width, x, 0)] && !visited[contour_index(width, x, 0)] {
-      ignore(flood_local_background_region(local_mask, visited, width, height, x, 0, connectivity))
+    if !local_mask[contour_index(width, x, 0)] &&
+      !visited[contour_index(width, x, 0)] {
+      ignore(
+        flood_local_background_region(
+          local_mask, visited, width, height, x, 0, connectivity,
+        ),
+      )
     }
     let bottom = height - 1
     if !local_mask[contour_index(width, x, bottom)] &&
       !visited[contour_index(width, x, bottom)] {
       ignore(
         flood_local_background_region(
-          local_mask,
-          visited,
-          width,
-          height,
-          x,
-          bottom,
-          connectivity,
+          local_mask, visited, width, height, x, bottom, connectivity,
         ),
       )
     }
   }
   for y = 0; y < height; y = y + 1 {
-    if !local_mask[contour_index(width, 0, y)] && !visited[contour_index(width, 0, y)] {
-      ignore(flood_local_background_region(local_mask, visited, width, height, 0, y, connectivity))
+    if !local_mask[contour_index(width, 0, y)] &&
+      !visited[contour_index(width, 0, y)] {
+      ignore(
+        flood_local_background_region(
+          local_mask, visited, width, height, 0, y, connectivity,
+        ),
+      )
     }
     let right = width - 1
     if !local_mask[contour_index(width, right, y)] &&
       !visited[contour_index(width, right, y)] {
       ignore(
         flood_local_background_region(
-          local_mask,
-          visited,
-          width,
-          height,
-          right,
-          y,
-          connectivity,
+          local_mask, visited, width, height, right, y, connectivity,
         ),
       )
     }
@@ -457,6 +462,7 @@ fn mark_external_background(
   visited
 }
 
+///|
 fn build_outer_contour(
   img : @image.GrayImage,
   region : RegionData,
@@ -484,10 +490,12 @@ fn build_outer_contour(
         if contour_mask_foreground(region.mask, img.width(), nx, ny) {
           continue
         }
-
         let lx = nx - region.bbox.x
         let ly = ny - region.bbox.y
-        if lx < 0 || ly < 0 || lx >= region.bbox.width || ly >= region.bbox.height ||
+        if lx < 0 ||
+          ly < 0 ||
+          lx >= region.bbox.width ||
+          ly >= region.bbox.height ||
           external_background[contour_index(region.bbox.width, lx, ly)] {
           perimeter = perimeter + 1
           is_boundary = true
@@ -498,7 +506,6 @@ fn build_outer_contour(
       }
     }
   }
-
   build_contour_draft(
     boundary_mask,
     img.width(),
@@ -511,6 +518,7 @@ fn build_outer_contour(
   )
 }
 
+///|
 fn build_hole_contour(
   img : @image.GrayImage,
   region : RegionData,
@@ -518,8 +526,12 @@ fn build_hole_contour(
 ) -> ContourDraft {
   let boundary_mask = Array::make(img.pixel_count(), false)
   let mut perimeter = 0
-  for y = hole_region.bbox.y; y < hole_region.bbox.y + hole_region.bbox.height; y = y + 1 {
-    for x = hole_region.bbox.x; x < hole_region.bbox.x + hole_region.bbox.width; x = x + 1 {
+  for y = hole_region.bbox.y
+      y < hole_region.bbox.y + hole_region.bbox.height
+      y = y + 1 {
+    for x = hole_region.bbox.x
+        x < hole_region.bbox.x + hole_region.bbox.width
+        x = x + 1 {
       if !contour_mask_foreground(hole_region.mask, region.bbox.width, x, y) {
         continue
       }
@@ -536,7 +548,6 @@ fn build_hole_contour(
       }
     }
   }
-
   build_contour_draft(
     boundary_mask,
     img.width(),
@@ -557,6 +568,7 @@ fn build_hole_contour(
   )
 }
 
+///|
 fn collect_region_contours(
   img : @image.GrayImage,
   region : RegionData,
@@ -571,9 +583,7 @@ fn collect_region_contours(
     region.bbox.height,
     background_connectivity,
   )
-
   drafts.push(build_outer_contour(img, region, visited_background))
-
   for y = 0; y < region.bbox.height; y = y + 1 {
     for x = 0; x < region.bbox.width; x = x + 1 {
       let idx = contour_index(region.bbox.width, x, y)
@@ -595,11 +605,11 @@ fn collect_region_contours(
   drafts
 }
 
+///|
 fn point_in_contour(points : Array[Point], sample : Point) -> Bool {
   if points.length() < 3 {
     return false
   }
-
   let px = sample.x.to_double() + 0.5
   let py = sample.y.to_double() + 0.5
   let mut inside = false
@@ -623,6 +633,7 @@ fn point_in_contour(points : Array[Point], sample : Point) -> Bool {
   inside
 }
 
+///|
 fn assign_contour_hierarchy(drafts : Array[ContourDraft]) -> Array[Contour] {
   let contours = []
   for i = 0; i < drafts.length(); i = i + 1 {
@@ -643,22 +654,19 @@ fn assign_contour_hierarchy(drafts : Array[ContourDraft]) -> Array[Contour] {
       if !point_in_contour(candidate.points, draft.seed) {
         continue
       }
-
       let candidate_area = bbox_area(candidate.bbox)
       match parent {
-        Some(_) => {
+        Some(_) =>
           if candidate_area < parent_box_area {
             parent = Some(j)
             parent_box_area = candidate_area
           }
-        }
         None => {
           parent = Some(j)
           parent_box_area = candidate_area
         }
       }
     }
-
     contours.push({
       points: draft.points,
       area: draft.area,
@@ -671,6 +679,7 @@ fn assign_contour_hierarchy(drafts : Array[ContourDraft]) -> Array[Contour] {
   contours
 }
 
+///|
 fn copy_points(points : Array[Point]) -> Array[Point] {
   let copied = []
   for point in points {
@@ -679,14 +688,17 @@ fn copy_points(points : Array[Point]) -> Array[Point] {
   copied
 }
 
+///|
 fn point_equal(left : Point, right : Point) -> Bool {
   left.x == right.x && left.y == right.y
 }
 
+///|
 fn point_less(left : Point, right : Point) -> Bool {
   left.x < right.x || (left.x == right.x && left.y < right.y)
 }
 
+///|
 fn insertion_sort_points(points : Array[Point]) -> Unit {
   for i = 1; i < points.length(); i = i + 1 {
     let next = points[i]
@@ -699,6 +711,7 @@ fn insertion_sort_points(points : Array[Point]) -> Unit {
   }
 }
 
+///|
 fn unique_sorted_points(points : Array[Point]) -> Array[Point] {
   if points.length() == 0 {
     return []
@@ -714,37 +727,47 @@ fn unique_sorted_points(points : Array[Point]) -> Array[Point] {
   unique
 }
 
+///|
 fn contour_cross(origin : Point, left : Point, right : Point) -> Int {
-  (left.x - origin.x) * (right.y - origin.y) - (left.y - origin.y) * (right.x - origin.x)
+  (left.x - origin.x) * (right.y - origin.y) -
+  (left.y - origin.y) * (right.x - origin.x)
 }
 
+///|
 fn convex_hull_points(points : Array[Point]) -> Array[Point] {
   let unique = unique_sorted_points(points)
   if unique.length() <= 1 {
     return unique
   }
-
   let lower = []
   for point in unique {
     while lower.length() >= 2 &&
-      contour_cross(lower[lower.length() - 2], lower[lower.length() - 1], point) <= 0 {
+          contour_cross(
+            lower[lower.length() - 2],
+            lower[lower.length() - 1],
+            point,
+          ) <=
+          0 {
       ignore(lower.pop())
     }
     lower.push(point)
   }
-
   let upper = []
   let mut i = unique.length()
   while i > 0 {
     i = i - 1
     let point = unique[i]
     while upper.length() >= 2 &&
-      contour_cross(upper[upper.length() - 2], upper[upper.length() - 1], point) <= 0 {
+          contour_cross(
+            upper[upper.length() - 2],
+            upper[upper.length() - 1],
+            point,
+          ) <=
+          0 {
       ignore(upper.pop())
     }
     upper.push(point)
   }
-
   ignore(lower.pop())
   ignore(upper.pop())
   let hull = []
@@ -761,20 +784,25 @@ fn convex_hull_points(points : Array[Point]) -> Array[Point] {
   }
 }
 
+///|
 fn squared_distance_to_point(sample : Point, point : Point) -> Double {
   let dx = (sample.x - point.x).to_double()
   let dy = (sample.y - point.y).to_double()
   dx * dx + dy * dy
 }
 
-fn point_segment_distance_sq(sample : Point, start : Point, end_ : Point) -> Double {
+///|
+fn point_segment_distance_sq(
+  sample : Point,
+  start : Point,
+  end_ : Point,
+) -> Double {
   let dx = (end_.x - start.x).to_double()
   let dy = (end_.y - start.y).to_double()
   let len_sq = dx * dx + dy * dy
   if len_sq == 0.0 {
     return squared_distance_to_point(sample, start)
   }
-
   let px = (sample.x - start.x).to_double()
   let py = (sample.y - start.y).to_double()
   let projection = (px * dx + py * dy) / len_sq
@@ -784,7 +812,6 @@ fn point_segment_distance_sq(sample : Point, start : Point, end_ : Point) -> Dou
   if projection >= 1.0 {
     return squared_distance_to_point(sample, end_)
   }
-
   let nearest_x = start.x.to_double() + projection * dx
   let nearest_y = start.y.to_double() + projection * dy
   let diff_x = sample.x.to_double() - nearest_x
@@ -792,22 +819,17 @@ fn point_segment_distance_sq(sample : Point, start : Point, end_ : Point) -> Dou
   diff_x * diff_x + diff_y * diff_y
 }
 
+///|
 fn approx_polyline(points : Array[Point], epsilon : Double) -> Array[Point] {
   if points.length() <= 2 {
     return copy_points(points)
   }
-
-  let threshold = if epsilon <= 0.0 {
-    0.0
-  } else {
-    epsilon * epsilon
-  }
+  let threshold = if epsilon <= 0.0 { 0.0 } else { epsilon * epsilon }
   let keep = Array::make(points.length(), false)
   keep[0] = true
   keep[points.length() - 1] = true
   let stack_starts = [0]
   let stack_ends = [points.length() - 1]
-
   while stack_starts.length() > 0 {
     let last = stack_starts.length() - 1
     let start = stack_starts[last]
@@ -817,17 +839,19 @@ fn approx_polyline(points : Array[Point], epsilon : Double) -> Array[Point] {
     if end_ <= start + 1 {
       continue
     }
-
     let mut best_index = -1
     let mut best_distance = -1.0
     for i = start + 1; i < end_; i = i + 1 {
-      let distance = point_segment_distance_sq(points[i], points[start], points[end_])
+      let distance = point_segment_distance_sq(
+        points[i],
+        points[start],
+        points[end_],
+      )
       if distance > best_distance {
         best_distance = distance
         best_index = i
       }
     }
-
     if best_index != -1 && best_distance > threshold {
       keep[best_index] = true
       stack_starts.push(start)
@@ -836,7 +860,6 @@ fn approx_polyline(points : Array[Point], epsilon : Double) -> Array[Point] {
       stack_ends.push(end_)
     }
   }
-
   let simplified = []
   for i = 0; i < points.length(); i = i + 1 {
     if keep[i] {
@@ -846,20 +869,24 @@ fn approx_polyline(points : Array[Point], epsilon : Double) -> Array[Point] {
   simplified
 }
 
+///|
 fn point_on_segment(sample : Point, start : Point, end_ : Point) -> Bool {
   let cross = (sample.x - start.x) * (end_.y - start.y) -
     (sample.y - start.y) * (end_.x - start.x)
   if cross != 0 {
     return false
   }
-
   let min_x = if start.x < end_.x { start.x } else { end_.x }
   let max_x = if start.x > end_.x { start.x } else { end_.x }
   let min_y = if start.y < end_.y { start.y } else { end_.y }
   let max_y = if start.y > end_.y { start.y } else { end_.y }
-  sample.x >= min_x && sample.x <= max_x && sample.y >= min_y && sample.y <= max_y
+  sample.x >= min_x &&
+  sample.x <= max_x &&
+  sample.y >= min_y &&
+  sample.y <= max_y
 }
 
+///|
 fn point_in_polygon_or_boundary(points : Array[Point], sample : Point) -> Bool {
   if points.length() == 0 {
     return false
@@ -867,7 +894,6 @@ fn point_in_polygon_or_boundary(points : Array[Point], sample : Point) -> Bool {
   if points.length() == 1 {
     return point_equal(points[0], sample)
   }
-
   let mut previous = points.length() - 1
   for i = 0; i < points.length(); i = i + 1 {
     if point_on_segment(sample, points[previous], points[i]) {
@@ -875,7 +901,6 @@ fn point_in_polygon_or_boundary(points : Array[Point], sample : Point) -> Bool {
     }
     previous = i
   }
-
   let px = sample.x.to_double()
   let py = sample.y.to_double()
   let mut inside = false
@@ -889,7 +914,8 @@ fn point_in_polygon_or_boundary(points : Array[Point], sample : Point) -> Bool {
     if crosses {
       let start_x = start.x.to_double()
       let end_x = end_.x.to_double()
-      let cross_x = (end_x - start_x) * (py - start_y) / (end_y - start_y) + start_x
+      let cross_x = (end_x - start_x) * (py - start_y) / (end_y - start_y) +
+        start_x
       if px < cross_x {
         inside = !inside
       }
@@ -899,11 +925,11 @@ fn point_in_polygon_or_boundary(points : Array[Point], sample : Point) -> Bool {
   inside
 }
 
+///|
 fn hull_fill_area(points : Array[Point]) -> Int {
   if points.length() == 0 {
     return 0
   }
-
   let mut min_x = points[0].x
   let mut max_x = points[0].x
   let mut min_y = points[0].y
@@ -922,7 +948,6 @@ fn hull_fill_area(points : Array[Point]) -> Int {
       max_y = point.y
     }
   }
-
   let mut count = 0
   for y = min_y; y <= max_y; y = y + 1 {
     for x = min_x; x <= max_x; x = x + 1 {
@@ -934,6 +959,7 @@ fn hull_fill_area(points : Array[Point]) -> Int {
   count
 }
 
+///|
 fn abs_double(value : Double) -> Double {
   if value < 0.0 {
     -value
@@ -942,6 +968,7 @@ fn abs_double(value : Double) -> Double {
   }
 }
 
+///|
 fn normalize_rect_angle(angle_deg : Double) -> Double {
   let mut angle = angle_deg
   while angle <= -90.0 {
@@ -953,11 +980,11 @@ fn normalize_rect_angle(angle_deg : Double) -> Double {
   angle
 }
 
+///|
 fn atan2_approx_deg(y : Double, x : Double) -> Double {
   if x == 0.0 && y == 0.0 {
     return 0.0
   }
-
   let abs_y = abs_double(y) + 0.0000000001
   let (ratio, base) = if x < 0.0 {
     ((x + abs_y) / (abs_y - x), 2.356194490192345)
@@ -969,6 +996,7 @@ fn atan2_approx_deg(y : Double, x : Double) -> Double {
   normalize_rect_angle(signed * 57.29577951308232)
 }
 
+///|
 fn zero_rotated_rect(point : Point) -> RotatedRect {
   {
     center_x: point.x.to_double(),
@@ -979,6 +1007,7 @@ fn zero_rotated_rect(point : Point) -> RotatedRect {
   }
 }
 
+///|
 fn min_area_rect_points(points : Array[Point]) -> RotatedRect {
   if points.length() == 0 {
     return {
@@ -989,7 +1018,6 @@ fn min_area_rect_points(points : Array[Point]) -> RotatedRect {
       angle_deg: 0.0,
     }
   }
-
   let hull = convex_hull_points(points)
   if hull.length() == 1 {
     return zero_rotated_rect(hull[0])
@@ -1007,11 +1035,9 @@ fn min_area_rect_points(points : Array[Point]) -> RotatedRect {
       angle_deg: atan2_approx_deg(dy, dx),
     }
   }
-
   let mut best = zero_rotated_rect(hull[0])
   let mut best_area = 0.0
   let mut found = false
-
   for i = 0; i < hull.length(); i = i + 1 {
     let start = hull[i]
     let end_ = hull[(i + 1) % hull.length()]
@@ -1026,7 +1052,6 @@ fn min_area_rect_points(points : Array[Point]) -> RotatedRect {
     let uy = dy / edge_len
     let vx = -uy
     let vy = ux
-
     let first_u = hull[0].x.to_double() * ux + hull[0].y.to_double() * uy
     let first_v = hull[0].x.to_double() * vx + hull[0].y.to_double() * vy
     let mut min_u = first_u
@@ -1049,7 +1074,6 @@ fn min_area_rect_points(points : Array[Point]) -> RotatedRect {
         max_v = proj_v
       }
     }
-
     let mut width = max_u - min_u + 1.0
     let mut height = max_v - min_v + 1.0
     let center_u = (min_u + max_u) / 2.0
@@ -1057,14 +1081,12 @@ fn min_area_rect_points(points : Array[Point]) -> RotatedRect {
     let center_x = center_u * ux + center_v * vx
     let center_y = center_u * uy + center_v * vy
     let mut angle_deg = atan2_approx_deg(dy, dx)
-
     if height > width {
       let swapped = width
       width = height
       height = swapped
       angle_deg = normalize_rect_angle(angle_deg + 90.0)
     }
-
     let area = width * height
     if !found || area < best_area {
       best = { center_x, center_y, width, height, angle_deg }
@@ -1132,7 +1154,6 @@ pub fn approx_contour(contour : Contour, epsilon : Double) -> Array[Point] {
   if original.length() <= 2 {
     return copy_points(original)
   }
-
   let closed = copy_points(original)
   if !point_equal(closed[0], closed[closed.length() - 1]) {
     closed.push(closed[0])

@@ -1,5 +1,7 @@
 ///|
-pub fn gray_histogram(img : @image.GrayImage) -> Array[Int] raise @image.ImageError {
+pub fn gray_histogram(
+  img : @image.GrayImage,
+) -> Array[Int] raise @image.ImageError {
   let bins = Array::make(256, 0)
   for y = 0; y < img.height(); y = y + 1 {
     for x = 0; x < img.width(); x = x + 1 {
@@ -11,7 +13,9 @@ pub fn gray_histogram(img : @image.GrayImage) -> Array[Int] raise @image.ImageEr
 }
 
 ///|
-pub fn cumulative_histogram(hist : Array[Int]) -> Array[Int] raise @image.ImageError {
+pub fn cumulative_histogram(
+  hist : Array[Int],
+) -> Array[Int] raise @image.ImageError {
   if hist.length() != 256 {
     raise @image.InvalidBufferLength(256, hist.length())
   }
@@ -25,7 +29,10 @@ pub fn cumulative_histogram(hist : Array[Int]) -> Array[Int] raise @image.ImageE
 }
 
 ///|
-pub fn normalize_histogram(hist : Array[Int], scale : Int) -> Array[Int] raise @image.ImageError {
+pub fn normalize_histogram(
+  hist : Array[Int],
+  scale : Int,
+) -> Array[Int] raise @image.ImageError {
   if hist.length() != 256 {
     raise @image.InvalidBufferLength(256, hist.length())
   }
@@ -49,7 +56,9 @@ pub fn normalize_histogram(hist : Array[Int], scale : Int) -> Array[Int] raise @
 }
 
 ///|
-pub fn equalize_histogram(img : @image.GrayImage) -> @image.GrayImage raise @image.ImageError {
+pub fn equalize_histogram(
+  img : @image.GrayImage,
+) -> @image.GrayImage raise @image.ImageError {
   let hist = gray_histogram(img)
   let cumulative = cumulative_histogram(hist)
   let total = img.pixel_count()
@@ -69,7 +78,8 @@ pub fn equalize_histogram(img : @image.GrayImage) -> @image.GrayImage raise @ima
   for y = 0; y < img.height(); y = y + 1 {
     for x = 0; x < img.width(); x = x + 1 {
       let value = img.get(x, y).to_int()
-      let mapped = ((cumulative[value] - cdf_min) * 255 + denominator / 2) / denominator
+      let mapped = ((cumulative[value] - cdf_min) * 255 + denominator / 2) /
+        denominator
       out.set(x, y, @image.clamp_byte(mapped))
     }
   }

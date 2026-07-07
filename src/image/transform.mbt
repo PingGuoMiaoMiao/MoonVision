@@ -1,3 +1,4 @@
+///|
 fn validate_resize_dimensions(
   new_width : Int,
   new_height : Int,
@@ -27,7 +28,12 @@ pub fn resize_nearest(
   out
 }
 
-fn bilinear_source_position(index : Int, source_size : Int, target_size : Int) -> Int {
+///|
+fn bilinear_source_position(
+  index : Int,
+  source_size : Int,
+  target_size : Int,
+) -> Int {
   if target_size == 1 {
     0
   } else {
@@ -46,7 +52,6 @@ pub fn resize_bilinear(
   let denom_x = if new_width == 1 { 1 } else { new_width - 1 }
   let denom_y = if new_height == 1 { 1 } else { new_height - 1 }
   let denom = denom_x * denom_y
-
   for y = 0; y < new_height; y = y + 1 {
     let src_y_scaled = bilinear_source_position(y, img.height(), new_height)
     let y0 = src_y_scaled / denom_y
@@ -57,7 +62,6 @@ pub fn resize_bilinear(
       let x0 = src_x_scaled / denom_x
       let x1 = Int::min(x0 + 1, img.width() - 1)
       let wx = src_x_scaled % denom_x
-
       let top_left = img.get(x0, y0).to_int()
       let top_right = img.get(x1, y0).to_int()
       let bottom_left = img.get(x0, y1).to_int()

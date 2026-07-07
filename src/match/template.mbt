@@ -1,9 +1,11 @@
+///|
 struct TemplateMatch {
   x : Int
   y : Int
   score : Int
 } derive(Eq, Show)
 
+///|
 fn sad_at(
   source : @image.GrayImage,
   template : @image.GrayImage,
@@ -27,13 +29,11 @@ pub fn match_template_sad(
   template : @image.GrayImage,
 ) -> TemplateMatch raise @image.ImageError {
   if template.width() > source.width() || template.height() > source.height() {
-    raise @image.InvalidDimensions("template must not be larger than source image")
+    raise @image.InvalidDimensions(
+      "template must not be larger than source image",
+    )
   }
-  let mut best = {
-    x: 0,
-    y: 0,
-    score: sad_at(source, template, 0, 0),
-  }
+  let mut best = { x: 0, y: 0, score: sad_at(source, template, 0, 0) }
   for y = 0; y <= source.height() - template.height(); y = y + 1 {
     for x = 0; x <= source.width() - template.width(); x = x + 1 {
       let score = sad_at(source, template, x, y)

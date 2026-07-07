@@ -1,3 +1,4 @@
+///|
 fn distance_index(width : Int, x : Int, y : Int) -> Int {
   y * width + x
 }
@@ -10,7 +11,6 @@ pub fn distance_transform_manhattan(
   let height = img.height()
   let max_distance = width + height + 1
   let distances = Array::make(img.pixel_count(), 0)
-
   for y = 0; y < height; y = y + 1 {
     for x = 0; x < width; x = x + 1 {
       let idx = distance_index(width, x, y)
@@ -21,7 +21,6 @@ pub fn distance_transform_manhattan(
       }
     }
   }
-
   for y = 0; y < height; y = y + 1 {
     for x = 0; x < width; x = x + 1 {
       let idx = distance_index(width, x, y)
@@ -41,7 +40,6 @@ pub fn distance_transform_manhattan(
       distances[idx] = best
     }
   }
-
   for y = height - 1; y >= 0; y = y - 1 {
     for x = width - 1; x >= 0; x = x - 1 {
       let idx = distance_index(width, x, y)
@@ -61,15 +59,10 @@ pub fn distance_transform_manhattan(
       distances[idx] = best
     }
   }
-
   let out = @image.gray(width, height)
   for y = 0; y < height; y = y + 1 {
     for x = 0; x < width; x = x + 1 {
-      out.set(
-        x,
-        y,
-        @image.clamp_byte(distances[distance_index(width, x, y)]),
-      )
+      out.set(x, y, @image.clamp_byte(distances[distance_index(width, x, y)]))
     }
   }
   out
