@@ -1,7 +1,8 @@
+///|
 struct ReportImage {
   label : String
   path : String
-} derive(Eq, Show)
+} derive(Eq)
 
 ///|
 pub fn report_image(label : String, path : String) -> ReportImage {
@@ -25,8 +26,7 @@ pub fn svg_bounding_boxes(
   components : Array[@components.Component],
   title? : String = "MoonVision Detection Overlay",
 ) -> String {
-  let mut out =
-    "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 " +
+  let mut out = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 " +
     width.to_string() +
     " " +
     height.to_string() +
@@ -68,8 +68,7 @@ pub fn html_report(
   summary_lines : Array[String],
   images : Array[ReportImage],
 ) -> String {
-  let mut out =
-    "<!doctype html>\n<html lang=\"en\">\n<head>\n" +
+  let mut out = "<!doctype html>\n<html lang=\"en\">\n<head>\n" +
     "  <meta charset=\"utf-8\" />\n" +
     "  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n" +
     "  <title>" +

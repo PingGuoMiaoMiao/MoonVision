@@ -1,6 +1,9 @@
 _build/
 .mooncakes/
 target/
+.obsidian/
+pkg.generated.mbti
 examples/output/*
 !examples/output/.gitkeep
+examples/runtime/*
 .vscode/

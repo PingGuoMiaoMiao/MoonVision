@@ -1,9 +1,11 @@
+///|
 fn validate_median_radius(radius : Int) -> Unit raise @image.ImageError {
   if radius < 0 {
     raise @image.InvalidDimensions("median blur radius must not be negative")
   }
 }
 
+///|
 fn insertion_sort(values : Array[Int]) -> Unit {
   for i = 1; i < values.length(); i = i + 1 {
     let next = values[i]
@@ -25,7 +27,6 @@ pub fn median_blur(
   if radius == 0 {
     return img.copy()
   }
-
   let out = @image.gray(img.width(), img.height())
   let size = radius * 2 + 1
   let area = size * size

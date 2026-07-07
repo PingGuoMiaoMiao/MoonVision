@@ -7,6 +7,7 @@ struct IntKernel {
   bias : Int
 }
 
+///|
 fn clamp_coordinate(value : Int, upper_bound : Int) -> Int {
   if value < 0 {
     0
@@ -17,6 +18,7 @@ fn clamp_coordinate(value : Int, upper_bound : Int) -> Int {
   }
 }
 
+///|
 fn rounded_div(acc : Int, divisor : Int) -> Int {
   if divisor == 0 {
     acc
@@ -27,10 +29,12 @@ fn rounded_div(acc : Int, divisor : Int) -> Int {
   }
 }
 
+///|
 fn kernel_area(width : Int, height : Int) -> Int {
   width * height
 }
 
+///|
 fn validate_kernel_shape(
   width : Int,
   height : Int,
@@ -65,6 +69,7 @@ pub fn int_kernel(
   { width, height, data: values, divisor, bias }
 }
 
+///|
 fn sample_with_border_copy(
   img : @image.GrayImage,
   x : Int,
@@ -86,7 +91,11 @@ pub fn convolve(
       let mut acc = 0
       for ky = 0; ky < kernel.height; ky = ky + 1 {
         for kx = 0; kx < kernel.width; kx = kx + 1 {
-          let pixel = sample_with_border_copy(img, x + kx - half_w, y + ky - half_h)
+          let pixel = sample_with_border_copy(
+            img,
+            x + kx - half_w,
+            y + ky - half_h,
+          )
           let weight = kernel.data[ky * kernel.width + kx]
           acc = acc + pixel.to_int() * weight
         }

@@ -3,7 +3,7 @@
 ///|
 pub(all) suberror ZlibError {
   InvalidData(String)
-} derive(Show, Eq)
+} derive(Eq)
 
 ///|
 pub fn zlib_decompress_at(

@@ -1,4 +1,7 @@
-fn rgb_from_rgba_image_data(data : @codec.ImageData) -> RgbImage raise ImageError {
+///|
+fn rgb_from_rgba_image_data(
+  data : @codec.ImageData,
+) -> RgbImage raise ImageError {
   let width = data.width
   let height = data.height
   let expected = width * height * 4

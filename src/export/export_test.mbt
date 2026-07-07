@@ -1,40 +1,11 @@
+///|
 fn test_component() -> @components.Component {
-  let img = try! @image.gray_from_array(
-    6,
-    5,
-    [
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\xff',
-      b'\xff',
-      b'\xff',
-      b'\xff',
-      b'\x00',
-      b'\x00',
-      b'\xff',
-      b'\xff',
-      b'\xff',
-      b'\xff',
-      b'\x00',
-      b'\x00',
-      b'\xff',
-      b'\xff',
-      b'\xff',
-      b'\xff',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-      b'\x00',
-    ],
-  )
+  let img = try! @image.gray_from_array(6, 5, [
+    b'\x00', b'\x00', b'\x00', b'\x00', b'\x00', b'\x00', b'\x00', b'\x00', b'\xff',
+    b'\xff', b'\xff', b'\xff', b'\x00', b'\x00', b'\xff', b'\xff', b'\xff', b'\xff',
+    b'\x00', b'\x00', b'\xff', b'\xff', b'\xff', b'\xff', b'\x00', b'\x00', b'\x00',
+    b'\x00', b'\x00', b'\x00',
+  ])
   let components = try! @components.connected_components(img)
   components[0]
 }

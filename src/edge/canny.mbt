@@ -1,16 +1,22 @@
+///|
 fn edge_index(width : Int, x : Int, y : Int) -> Int {
   y * width + x
 }
 
+///|
 fn validate_canny_thresholds(
   low_threshold : Int,
   high_threshold : Int,
 ) -> Unit raise @image.ImageError {
   if low_threshold < 0 || low_threshold > 255 {
-    raise @image.InvalidDimensions("canny low_threshold must be in the range 0..255")
+    raise @image.InvalidDimensions(
+      "canny low_threshold must be in the range 0..255",
+    )
   }
   if high_threshold < 0 || high_threshold > 255 {
-    raise @image.InvalidDimensions("canny high_threshold must be in the range 0..255")
+    raise @image.InvalidDimensions(
+      "canny high_threshold must be in the range 0..255",
+    )
   }
   if low_threshold >= high_threshold {
     raise @image.InvalidDimensions(
@@ -19,6 +25,7 @@ fn validate_canny_thresholds(
   }
 }
 
+///|
 fn direction_bucket(gx : Int, gy : Int) -> Int {
   let ax = Int::abs(gx)
   let ay = Int::abs(gy)
@@ -33,6 +40,7 @@ fn direction_bucket(gx : Int, gy : Int) -> Int {
   }
 }
 
+///|
 fn neighbor_magnitude(
   magnitudes : Array[Int],
   width : Int,
@@ -54,13 +62,11 @@ pub fn canny_edges(
   high_threshold : Int,
 ) -> @image.GrayImage raise @image.ImageError {
   validate_canny_thresholds(low_threshold, high_threshold)
-
   let width = img.width()
   let height = img.height()
   let pixel_count = img.pixel_count()
   let magnitudes = Array::make(pixel_count, 0)
   let directions = Array::make(pixel_count, 0)
-
   for y = 0; y < height; y = y + 1 {
     for x = 0; x < width; x = x + 1 {
       let pair = sobel_pair_at(img, x, y)
@@ -72,7 +78,6 @@ pub fn canny_edges(
       directions[idx] = direction_bucket(pair.gx, pair.gy)
     }
   }
-
   let suppressed = Array::make(pixel_count, 0)
   for y = 0; y < height; y = y + 1 {
     for x = 0; x < width; x = x + 1 {
@@ -85,7 +90,9 @@ pub fn canny_edges(
         _ => (x - 1, y + 1, x + 1, y - 1)
       }
       let left = neighbor_magnitude(magnitudes, width, height, left_x, left_y)
-      let right = neighbor_magnitude(magnitudes, width, height, right_x, right_y)
+      let right = neighbor_magnitude(
+        magnitudes, width, height, right_x, right_y,
+      )
       suppressed[idx] = if magnitude > left && magnitude >= right {
         magnitude
       } else {
@@ -93,7 +100,6 @@ pub fn canny_edges(
       }
     }
   }
-
   let states = Array::make(pixel_count, 0)
   let stack_xs = []
   let stack_ys = []
@@ -136,7 +142,6 @@ pub fn canny_edges(
       }
     }
   }
-
   let out = @image.gray(width, height)
   for y = 0; y < height; y = y + 1 {
     for x = 0; x < width; x = x + 1 {

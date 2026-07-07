@@ -1,5 +1,5 @@
-///| Adapted from mizchi/zlib (Apache-2.0)
-
+///|
+/// Adapted from mizchi/zlib (Apache-2.0)
 fn write_u32_be(out : FixedArray[Byte], offset : Int, v : Int) -> Unit {
   out[offset] = ((v >> 24) & 0xff).to_byte()
   out[offset + 1] = ((v >> 16) & 0xff).to_byte()

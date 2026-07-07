@@ -3,15 +3,16 @@ pub(all) suberror ImageError {
   InvalidDimensions(String)
   InvalidBufferLength(Int, Int)
   OutOfBounds(Int, Int)
-} derive(Eq, Show)
+} derive(Eq)
 
 ///|
 struct GrayImage {
   width : Int
   height : Int
   data : FixedArray[Byte]
-} derive(Eq, Show)
+} derive(Eq)
 
+///|
 fn ensure_non_negative(width : Int, height : Int) -> Unit raise ImageError {
   if width <= 0 || height <= 0 {
     raise InvalidDimensions(
@@ -20,6 +21,7 @@ fn ensure_non_negative(width : Int, height : Int) -> Unit raise ImageError {
   }
 }
 
+///|
 fn pixel_count_or_panic(width : Int, height : Int) -> Int {
   width * height
 }
@@ -35,7 +37,12 @@ pub fn clamp_byte(value : Int) -> Byte {
   }
 }
 
-fn GrayImage::index_of(self : GrayImage, x : Int, y : Int) -> Int raise ImageError {
+///|
+fn GrayImage::index_of(
+  self : GrayImage,
+  x : Int,
+  y : Int,
+) -> Int raise ImageError {
   if x < 0 || y < 0 || x >= self.width || y >= self.height {
     raise OutOfBounds(x, y)
   }
@@ -43,7 +50,11 @@ fn GrayImage::index_of(self : GrayImage, x : Int, y : Int) -> Int raise ImageErr
 }
 
 ///|
-pub fn gray(width : Int, height : Int, fill? : Byte = b'\x00') -> GrayImage raise ImageError {
+pub fn gray(
+  width : Int,
+  height : Int,
+  fill? : Byte = b'\x00',
+) -> GrayImage raise ImageError {
   ensure_non_negative(width, height)
   {
     width,
@@ -86,7 +97,11 @@ pub fn GrayImage::pixel_count(self : GrayImage) -> Int {
 }
 
 ///|
-pub fn GrayImage::get(self : GrayImage, x : Int, y : Int) -> Byte raise ImageError {
+pub fn GrayImage::get(
+  self : GrayImage,
+  x : Int,
+  y : Int,
+) -> Byte raise ImageError {
   self.data[self.index_of(x, y)]
 }
 
