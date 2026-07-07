@@ -4,11 +4,5 @@
       "path": "PingGuoMiaoMiao/MoonVision/image",
       "alias": "image"
     }
-  ],
-  "test-import": [
-    {
-      "path": "moonbitlang/core/debug",
-      "alias": "debug"
-    }
   ]
 }

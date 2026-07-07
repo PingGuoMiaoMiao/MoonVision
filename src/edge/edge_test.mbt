@@ -17,111 +17,29 @@ test "sobel x detects vertical edge and sobel y stays flat" {
 }
 
 ///|
-#warnings("-deprecated")
 test "gradient magnitude and edge extract produce edge map" {
   let magnitude = try! gradient_magnitude(vertical_step())
   let edges = try! edge_extract(vertical_step(), threshold=200)
-  @debug.inspect(
-    magnitude.to_array(),
-    content=(
-      #|[
-      #|  0x00,
-      #|  0xff,
-      #|  0xff,
-      #|  0x00,
-      #|  0x00,
-      #|  0x00,
-      #|  0xff,
-      #|  0xff,
-      #|  0x00,
-      #|  0x00,
-      #|  0x00,
-      #|  0xff,
-      #|  0xff,
-      #|  0x00,
-      #|  0x00,
-      #|  0x00,
-      #|  0xff,
-      #|  0xff,
-      #|  0x00,
-      #|  0x00,
-      #|  0x00,
-      #|  0xff,
-      #|  0xff,
-      #|  0x00,
-      #|  0x00,
-      #|]
-    ),
-  )
-  @debug.inspect(
-    edges.to_array(),
-    content=(
-      #|[
-      #|  0x00,
-      #|  0xff,
-      #|  0xff,
-      #|  0x00,
-      #|  0x00,
-      #|  0x00,
-      #|  0xff,
-      #|  0xff,
-      #|  0x00,
-      #|  0x00,
-      #|  0x00,
-      #|  0xff,
-      #|  0xff,
-      #|  0x00,
-      #|  0x00,
-      #|  0x00,
-      #|  0xff,
-      #|  0xff,
-      #|  0x00,
-      #|  0x00,
-      #|  0x00,
-      #|  0xff,
-      #|  0xff,
-      #|  0x00,
-      #|  0x00,
-      #|]
-    ),
-  )
+  let expected = [
+    b'\x00', b'\xff', b'\xff', b'\x00', b'\x00', b'\x00', b'\xff', b'\xff', b'\x00',
+    b'\x00', b'\x00', b'\xff', b'\xff', b'\x00', b'\x00', b'\x00', b'\xff', b'\xff',
+    b'\x00', b'\x00', b'\x00', b'\xff', b'\xff', b'\x00', b'\x00',
+  ]
+  inspect(magnitude.to_array() == expected, content="true")
+  inspect(edges.to_array() == expected, content="true")
 }
 
 ///|
-#warnings("-deprecated")
 test "canny edges extract a thin binary edge map" {
   let edges = try! canny_edges(vertical_step(), 64, 128)
-  @debug.inspect(
-    edges.to_array(),
-    content=(
-      #|[
-      #|  0x00,
-      #|  0xff,
-      #|  0x00,
-      #|  0x00,
-      #|  0x00,
-      #|  0x00,
-      #|  0xff,
-      #|  0x00,
-      #|  0x00,
-      #|  0x00,
-      #|  0x00,
-      #|  0xff,
-      #|  0x00,
-      #|  0x00,
-      #|  0x00,
-      #|  0x00,
-      #|  0xff,
-      #|  0x00,
-      #|  0x00,
-      #|  0x00,
-      #|  0x00,
-      #|  0xff,
-      #|  0x00,
-      #|  0x00,
-      #|  0x00,
-      #|]
-    ),
+  inspect(
+    edges.to_array() ==
+    [
+      b'\x00', b'\xff', b'\x00', b'\x00', b'\x00', b'\x00', b'\xff', b'\x00', b'\x00',
+      b'\x00', b'\x00', b'\xff', b'\x00', b'\x00', b'\x00', b'\x00', b'\xff', b'\x00',
+      b'\x00', b'\x00', b'\x00', b'\xff', b'\x00', b'\x00', b'\x00',
+    ],
+    content="true",
   )
 }
 

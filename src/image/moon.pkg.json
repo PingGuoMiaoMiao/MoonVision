@@ -7,10 +7,6 @@
   ],
   "test-import": [
     {
-      "path": "moonbitlang/core/debug",
-      "alias": "debug"
-    },
-    {
       "path": "PingGuoMiaoMiao/MoonVision/vendor/zlib",
       "alias": "zlib"
     }

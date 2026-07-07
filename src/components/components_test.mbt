@@ -298,25 +298,15 @@ test "contour descriptors stay finite on fixed fixtures" {
 }
 
 ///|
-#warnings("-deprecated")
 test "manhattan distance transform handles empty and isolated foreground" {
   let empty = try! @image.gray(3, 3)
   let empty_distance = try! distance_transform_manhattan(empty)
-  @debug.inspect(
-    empty_distance.to_array(),
-    content=(
-      #|[
-      #|  0x00,
-      #|  0x00,
-      #|  0x00,
-      #|  0x00,
-      #|  0x00,
-      #|  0x00,
-      #|  0x00,
-      #|  0x00,
-      #|  0x00,
-      #|]
-    ),
+  inspect(
+    empty_distance.to_array() ==
+    [
+      b'\x00', b'\x00', b'\x00', b'\x00', b'\x00', b'\x00', b'\x00', b'\x00', b'\x00',
+    ],
+    content="true",
   )
   inspect(try! max_distance(empty_distance), content="0")
   let single = try! @image.gray_from_array(3, 3, [

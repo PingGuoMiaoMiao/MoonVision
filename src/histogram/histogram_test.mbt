@@ -34,19 +34,20 @@ test "normalize histogram scales by maximum count" {
 }
 
 ///|
-#warnings("-deprecated")
 test "equalize histogram expands low contrast fixture" {
   let img = try! @image.gray_from_array(4, 1, [
     b'\x32', b'\x32', b'\x64', b'\x96',
   ])
   let out = try! equalize_histogram(img)
-  @debug.inspect(out.to_array(), content="[0x00, 0x00, 0x80, 0xff]")
+  inspect(
+    out.to_array() == [b'\x00', b'\x00', b'\x80', b'\xff'],
+    content="true",
+  )
 }
 
 ///|
-#warnings("-deprecated")
 test "equalize histogram maps constant image safely" {
   let img = try! @image.gray_from_array(3, 1, [b'\x2a', b'\x2a', b'\x2a'])
   let out = try! equalize_histogram(img)
-  @debug.inspect(out.to_array(), content="[0x00, 0x00, 0x00]")
+  inspect(out.to_array() == [b'\x00', b'\x00', b'\x00'], content="true")
 }

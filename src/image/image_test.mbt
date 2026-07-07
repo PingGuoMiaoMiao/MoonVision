@@ -85,29 +85,17 @@ fn fixture_png_2x2() -> Bytes {
 }
 
 ///|
-#warnings("-deprecated")
 test "png decoding adapts RGBA data to rgb image" {
   let img = try! rgb_from_png_bytes(fixture_png_2x2())
   inspect(img.width(), content="2")
   inspect(img.height(), content="2")
-  @debug.inspect(
-    img.to_array(),
-    content=(
-      #|[
-      #|  0xff,
-      #|  0x00,
-      #|  0x00,
-      #|  0x00,
-      #|  0xff,
-      #|  0x00,
-      #|  0x00,
-      #|  0x00,
-      #|  0xff,
-      #|  0xff,
-      #|  0xff,
-      #|  0xff,
-      #|]
-    ),
+  inspect(
+    img.to_array() ==
+    [
+      b'\xff', b'\x00', b'\x00', b'\x00', b'\xff', b'\x00', b'\x00', b'\x00', b'\xff',
+      b'\xff', b'\xff', b'\xff',
+    ],
+    content="true",
   )
 }
 
@@ -119,7 +107,6 @@ fn transform_fixture_gray() -> GrayImage {
 }
 
 ///|
-#warnings("-deprecated")
 test "gray transforms resize flip and rotate predictably" {
   let img = transform_fixture_gray()
   let resized = try! resize_nearest(img, 4, 3)
@@ -127,101 +114,51 @@ test "gray transforms resize flip and rotate predictably" {
   let flipped_v = try! flip_vertical(img)
   let rotated_cw = try! rotate90_cw(img)
   let rotated_ccw = try! rotate90_ccw(img)
-  @debug.inspect(
-    resized.to_array(),
-    content=(
-      #|[
-      #|  0x01,
-      #|  0x01,
-      #|  0x02,
-      #|  0x02,
-      #|  0x03,
-      #|  0x03,
-      #|  0x04,
-      #|  0x04,
-      #|  0x05,
-      #|  0x05,
-      #|  0x06,
-      #|  0x06,
-      #|]
-    ),
+  inspect(
+    resized.to_array() ==
+    [
+      b'\x01', b'\x01', b'\x02', b'\x02', b'\x03', b'\x03', b'\x04', b'\x04', b'\x05',
+      b'\x05', b'\x06', b'\x06',
+    ],
+    content="true",
   )
-  @debug.inspect(
-    flipped_h.to_array(),
-    content=(
-      #|[
-      #|  0x02,
-      #|  0x01,
-      #|  0x04,
-      #|  0x03,
-      #|  0x06,
-      #|  0x05,
-      #|]
-    ),
+  inspect(
+    flipped_h.to_array() ==
+    [b'\x02', b'\x01', b'\x04', b'\x03', b'\x06', b'\x05'],
+    content="true",
   )
-  @debug.inspect(
-    flipped_v.to_array(),
-    content=(
-      #|[
-      #|  0x05,
-      #|  0x06,
-      #|  0x03,
-      #|  0x04,
-      #|  0x01,
-      #|  0x02,
-      #|]
-    ),
+  inspect(
+    flipped_v.to_array() ==
+    [b'\x05', b'\x06', b'\x03', b'\x04', b'\x01', b'\x02'],
+    content="true",
   )
-  @debug.inspect(
-    rotated_cw.to_array(),
-    content=(
-      #|[
-      #|  0x05,
-      #|  0x03,
-      #|  0x01,
-      #|  0x06,
-      #|  0x04,
-      #|  0x02,
-      #|]
-    ),
+  inspect(
+    rotated_cw.to_array() ==
+    [b'\x05', b'\x03', b'\x01', b'\x06', b'\x04', b'\x02'],
+    content="true",
   )
-  @debug.inspect(
-    rotated_ccw.to_array(),
-    content=(
-      #|[
-      #|  0x02,
-      #|  0x04,
-      #|  0x06,
-      #|  0x01,
-      #|  0x03,
-      #|  0x05,
-      #|]
-    ),
+  inspect(
+    rotated_ccw.to_array() ==
+    [b'\x02', b'\x04', b'\x06', b'\x01', b'\x03', b'\x05'],
+    content="true",
   )
 }
 
 ///|
-#warnings("-deprecated")
 test "bilinear resize preserves dimensions and interpolates values" {
   let img = try! gray_from_array(2, 2, [b'\x00', b'\x64', b'\x96', b'\xfa'])
   let same = try! resize_bilinear(img, 2, 2)
-  @debug.inspect(same.to_array(), content="[0x00, 0x64, 0x96, 0xfa]")
+  inspect(
+    same.to_array() == [b'\x00', b'\x64', b'\x96', b'\xfa'],
+    content="true",
+  )
   let resized = try! resize_bilinear(img, 3, 3)
-  @debug.inspect(
-    resized.to_array(),
-    content=(
-      #|[
-      #|  0x00,
-      #|  0x32,
-      #|  0x64,
-      #|  0x4b,
-      #|  0x7d,
-      #|  0xaf,
-      #|  0x96,
-      #|  0xc8,
-      #|  0xfa,
-      #|]
-    ),
+  inspect(
+    resized.to_array() ==
+    [
+      b'\x00', b'\x32', b'\x64', b'\x4b', b'\x7d', b'\xaf', b'\x96', b'\xc8', b'\xfa',
+    ],
+    content="true",
   )
 }
 
