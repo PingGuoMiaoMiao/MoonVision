@@ -43,5 +43,9 @@ jobs:
       - name: run document enhancement demo
         run: moon run src/demo/document_enhancement
 
+      - name: verify published package usage
+        shell: pwsh
+        run: ./tools/verify_published_package.ps1
+
       - name: git diff --exit-code
         run: git diff --exit-code

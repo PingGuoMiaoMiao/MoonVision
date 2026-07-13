@@ -10,7 +10,7 @@ The current `v2.0` line includes the core lightweight image-processing library:
 - convolution and neighborhood filters: box blur, gaussian blur, sharpen, median blur
 - gray-image geometric transforms: nearest-neighbor resize, bilinear resize, horizontal flip, vertical flip, 90-degree rotation
 - edge detection: Sobel X/Y, gradient magnitude, binary edge extraction, Canny, lightweight Hough line detection
-- binary morphology: erosion, dilation, opening, closing, gradient, top hat, black hat
+- binary morphology: erosion, dilation, open binary, close binary, gradient, top hat, black hat
 - connected components, contour hierarchy, contour statistics, shape analysis, distance transform, and bounding boxes
 - histogram analysis: grayscale histogram, cumulative histogram, normalized histogram, histogram equalization
 - template matching: grayscale sum-of-absolute-differences best match
