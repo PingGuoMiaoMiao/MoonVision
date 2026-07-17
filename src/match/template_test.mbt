@@ -21,7 +21,7 @@ test "sad template matching rejects oversized templates" {
     err =>
       inspect(
         match err {
-          @image.InvalidDimensions(message) =>
+          InvalidDimensions(message) =>
             message == "template must not be larger than source image"
           _ => false
         },

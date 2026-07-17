@@ -1,0 +1,7 @@
+import {
+  "PingGuoMiaoMiao/MoonVision/vendor/imagecodec" @codec,
+}
+
+import {
+  "PingGuoMiaoMiao/MoonVision/vendor/zlib",
+} for "test"

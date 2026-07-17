@@ -1,0 +1,5 @@
+import {
+  "PingGuoMiaoMiao/MoonVision/components",
+  "PingGuoMiaoMiao/MoonVision/image",
+  "PingGuoMiaoMiao/MoonVision/vendor/imagecodec" @codec,
+}

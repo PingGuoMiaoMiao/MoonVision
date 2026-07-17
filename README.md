@@ -10,7 +10,7 @@ The current `v2.0` line includes the core lightweight image-processing library:
 - convolution and neighborhood filters: box blur, gaussian blur, sharpen, median blur
 - gray-image geometric transforms: nearest-neighbor resize, bilinear resize, horizontal flip, vertical flip, 90-degree rotation
 - edge detection: Sobel X/Y, gradient magnitude, binary edge extraction, Canny, lightweight Hough line detection
-- binary morphology: erosion, dilation, opening, closing, gradient, top hat, black hat
+- binary morphology: erosion, dilation, open binary, close binary, gradient, top hat, black hat
 - connected components, contour hierarchy, contour statistics, shape analysis, distance transform, and bounding boxes
 - histogram analysis: grayscale histogram, cumulative histogram, normalized histogram, histogram equalization
 - template matching: grayscale sum-of-absolute-differences best match
@@ -42,19 +42,50 @@ src/
 
 ## Quick Start
 
+Install or update the MoonBit toolchain first:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -Command "irm https://cli.moonbitlang.com/install/powershell.ps1 | iex"
+moon version
+```
+
+Install MoonVision in another MoonBit project:
+
+```powershell
+moon add PingGuoMiaoMiao/MoonVision
+```
+
+Import the packages you need from your package's `moon.pkg`:
+
+```moonbit
+import {
+  "PingGuoMiaoMiao/MoonVision/image",
+  "PingGuoMiaoMiao/MoonVision/ops",
+  "PingGuoMiaoMiao/MoonVision/filter",
+  "PingGuoMiaoMiao/MoonVision/edge",
+  "PingGuoMiaoMiao/MoonVision/components",
+  "PingGuoMiaoMiao/MoonVision/export",
+}
+```
+
 Check the project:
 
 ```powershell
-moon check
-```
-
-Run tests:
-
-```powershell
+moon check -d
+moon check --warn-list +73
+moon build
 moon test
 ```
 
-At the time of writing, the repository test suite passes on the repository default target.
+Run the bundled demos:
+
+```powershell
+moon run src/demo/object_counting
+moon run src/demo/edge_detection
+moon run src/demo/document_enhancement
+```
+
+At the time of writing, the repository has been verified with `moon 0.1.20260713`.
 
 ## Basic Usage
 
@@ -211,11 +242,14 @@ Outputs:
 
 - `examples/output/bacteria_labeled_review/index.html`
 - `examples/output/bacteria_labeled_review/summary_readable.csv`
+- `examples/output/bacteria_labeled_review/review_focus.csv`
+- `examples/output/bacteria_labeled_review/param_summary.csv`
+- `examples/output/bacteria_labeled_review/review_category_summary.csv`
 - `examples/output/bacteria_labeled_review/mode_summary.csv`
 - `examples/output/bacteria_labeled_review/label_summary.csv`
 - `examples/output/bacteria_labeled_review/size_summary.csv`
 
-The `v1.5` review report includes the default F1-oriented result, a recall-oriented parameter set, and a precision-oriented parameter set for each image. This keeps high-recall probes visible without hiding their false-positive cost.
+The `v1.5` review report includes the default F1-oriented result, a recall-oriented parameter set, and a precision-oriented parameter set for each image. The review dashboard also writes direct tuning views: `review_focus.csv` groups each image into clean-match, under-detected, over-detected, or mixed miss/noise buckets; `param_summary.csv` ranks probe presets across the selected image set; `review_category_summary.csv` summarizes where the current detector still needs tuning.
 
 ## Version Stages
 
@@ -281,15 +315,19 @@ Full labeled review:
 powershell -NoProfile -ExecutionPolicy Bypass -File tools/run_labeled_bacteria_review.ps1 -ForceRerun
 ```
 
-Use `mode_summary.csv` for the shortest top-level comparison, `summary_readable.csv` for per-image details, and each sample's `preset_scores.csv` for parameter-level debugging.
+Use `mode_summary.csv` for the shortest top-level comparison, `review_focus.csv` for deciding which images need manual inspection, `param_summary.csv` for preset-level tuning, `summary_readable.csv` for per-image details, and each sample's `preset_scores.csv` for parameter-level debugging.
 
 ## Final Verification Checklist
 
 Run the core checks:
 
 ```powershell
-moon check
+moon check -d
+moon check --warn-list +73
+moon build
 moon test
+moon fmt --check
+moon info
 ```
 
 Run the bundled visual demos:
@@ -338,6 +376,7 @@ Current tests cover:
 
 - The project intentionally focuses on the algorithm layer. It does not provide GUI features, video processing, OpenCV bindings, or machine learning integration.
 - PNG decode and export are implemented locally from vendored subsets adapted from `mizchi/image` and `mizchi/zlib`, because the current upstream registry dependency graph is not compatible with the local MoonBit toolchain used for this repository.
+- Third-party vendored attribution and Apache-2.0 license notices are documented in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 ## License
 

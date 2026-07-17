@@ -70,9 +70,7 @@ pub fn connected_components(
   min_area? : Int = 1,
 ) -> Array[Component] raise @image.ImageError {
   if min_area < 1 {
-    raise @image.InvalidDimensions(
-      "min_area must be greater than or equal to one",
-    )
+    raise InvalidDimensions("min_area must be greater than or equal to one")
   }
   let labels = Array::make(img.pixel_count(), 0)
   let parents = [0]

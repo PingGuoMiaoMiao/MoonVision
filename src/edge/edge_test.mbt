@@ -49,7 +49,7 @@ test "canny edges rejects inverted thresholds" {
     err =>
       inspect(
         match err {
-          @image.InvalidDimensions(message) =>
+          InvalidDimensions(message) =>
             message == "canny low_threshold must be less than high_threshold"
           _ => false
         },

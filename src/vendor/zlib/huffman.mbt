@@ -67,7 +67,7 @@ fn HuffmanTree::insert(
     node = child
   }
   if self.symbol[node] != -1 {
-    raise ZlibError::InvalidData("Invalid Huffman code")
+    raise InvalidData("Invalid Huffman code")
   }
   self.symbol[node] = sym
 }
@@ -103,13 +103,13 @@ fn HuffmanTree::decode(
     let bit = reader.read_bits(1)
     node = if bit == 0 { self.left[node] } else { self.right[node] }
     if node == -1 {
-      raise ZlibError::InvalidData("Invalid Huffman code")
+      raise InvalidData("Invalid Huffman code")
     }
     if self.symbol[node] != -1 {
       return self.symbol[node]
     }
   }
-  raise ZlibError::InvalidData("Unreachable")
+  raise InvalidData("Unreachable")
 }
 
 ///|
@@ -198,19 +198,19 @@ fn build_huffman_tree(
         let prefix = rev & ((1 << table_bits) - 1)
         let sub_idx = tree.table_sub[prefix]
         if sub_idx == -1 {
-          raise ZlibError::InvalidData("Invalid Huffman subtable")
+          raise InvalidData("Invalid Huffman subtable")
         }
         let sub_bits = tree.sub_bits[sub_idx]
         let sub_len = len - table_bits
         if sub_len > sub_bits {
-          raise ZlibError::InvalidData("Invalid Huffman subtable width")
+          raise InvalidData("Invalid Huffman subtable width")
         }
         let sub_code = rev >> table_bits
         let fill = 1 << (sub_bits - sub_len)
         for j in 0..<fill {
           let idx = sub_code | (j << sub_len)
           if tree.sub_symbol[sub_idx][idx] != -1 {
-            raise ZlibError::InvalidData("Invalid Huffman code")
+            raise InvalidData("Invalid Huffman code")
           }
           tree.sub_symbol[sub_idx][idx] = i
           tree.sub_len[sub_idx][idx] = len

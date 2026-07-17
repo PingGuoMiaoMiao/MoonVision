@@ -24,7 +24,7 @@ fn BitReader::ensure_bits(self : BitReader, n : Int) -> Unit raise ZlibError {
       if self.bit_count > 0 {
         break
       }
-      raise ZlibError::InvalidData("Unexpected end of deflate stream")
+      raise InvalidData("Unexpected end of deflate stream")
     }
     // Batch 4 bytes when possible to reduce loop overhead in hot paths.
     // Use UInt64 to keep shifts safe for native targets.
@@ -102,7 +102,7 @@ fn BitReader::read_u16_le_aligned(self : BitReader) -> Int raise ZlibError {
     self.align_byte()
   }
   if self.byte_pos + 2 > self.data.length() {
-    raise ZlibError::InvalidData("Unexpected end of deflate stream")
+    raise InvalidData("Unexpected end of deflate stream")
   }
   let b0 = self.data[self.byte_pos].to_int()
   let b1 = self.data[self.byte_pos + 1].to_int()
@@ -120,7 +120,7 @@ fn BitReader::read_bytes_aligned(
     self.align_byte()
   }
   if self.byte_pos + len > self.data.length() {
-    raise ZlibError::InvalidData("Unexpected end of deflate stream")
+    raise InvalidData("Unexpected end of deflate stream")
   }
   for i in 0..<len {
     output.push(self.data[self.byte_pos + i])

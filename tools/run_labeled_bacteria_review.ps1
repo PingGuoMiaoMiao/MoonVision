@@ -380,6 +380,60 @@ function New-ModeSummaryItem {
   }
 }
 
+function Get-ReviewCategory {
+  param(
+    [int]$FalsePositive,
+    [int]$FalseNegative,
+    [int]$Matched,
+    [int]$LabelCount
+  )
+
+  if ($LabelCount -eq 0 -and $Matched -eq 0 -and $FalsePositive -eq 0) {
+    return "empty_or_no_labels"
+  }
+  if ($FalsePositive -eq 0 -and $FalseNegative -eq 0) {
+    return "clean_match"
+  }
+  if ($FalsePositive -gt 0 -and $FalseNegative -gt 0) {
+    return "mixed_miss_and_noise"
+  }
+  if ($FalseNegative -gt 0) {
+    return "under_detected"
+  }
+  return "over_detected"
+}
+
+function New-ScoreSummaryItem {
+  param(
+    [string]$Name,
+    [object[]]$Rows
+  )
+
+  $matched = Get-SummarySum -Items $Rows -PropertyName "MatchedCount"
+  $falsePositive = Get-SummarySum -Items $Rows -PropertyName "FalsePositiveCount"
+  $falseNegative = Get-SummarySum -Items $Rows -PropertyName "FalseNegativeCount"
+  $labels = Get-SummarySum -Items $Rows -PropertyName "LabelCount"
+  $detections = Get-SummarySum -Items $Rows -PropertyName "DetectedCount"
+  $precision = if (($matched + $falsePositive) -gt 0) { [math]::Round($matched / ($matched + $falsePositive), 4) } else { 0.0 }
+  $recall = if ($labels -gt 0) { [math]::Round($matched / $labels, 4) } else { 0.0 }
+  $f1 = if (($precision + $recall) -gt 0) { [math]::Round(2.0 * $precision * $recall / ($precision + $recall), 4) } else { 0.0 }
+  $meanIou = if ($Rows.Count -gt 0) { [math]::Round((($Rows | Measure-Object -Property MeanIoU -Average).Average), 4) } else { 0.0 }
+
+  [PSCustomObject]@{
+    Name = $Name
+    Images = $Rows.Count
+    Labels = $labels
+    Detections = $detections
+    Matched = $matched
+    FalsePositive = $falsePositive
+    FalseNegative = $falseNegative
+    Precision = $precision
+    Recall = $recall
+    F1 = $f1
+    MeanIoU = $meanIou
+  }
+}
+
 $pairs = Get-ChildItem -File -Recurse $InputRoot |
   Where-Object { $_.FullName -like ("*" + $bacteriaKeyword + "*") -and $_.Extension -eq ".png" } |
   Where-Object {
@@ -423,6 +477,7 @@ if ($MaxImages -gt 0) {
 }
 
 $summary = @()
+$allPresetScores = @()
 $labelStats = @{}
 $annotationOutcomes = @()
 
@@ -486,6 +541,25 @@ foreach ($pair in $pairs) {
   $presetScoreRows |
     Select-Object ParamSet, DetectedCount, CountDelta, CountDeltaText, MatchedCount, FalsePositiveCount, FalseNegativeCount, Precision, Recall, F1, MeanIoU |
     Export-Csv -LiteralPath (Join-Path $itemDir "preset_scores.csv") -NoTypeInformation -Encoding UTF8
+
+  foreach ($scoreRow in $presetScoreRows) {
+    $allPresetScores += [PSCustomObject]@{
+      BatchFolder = ($relativeImagePath -split '\\')[0]
+      SampleFolder = Split-Path -Leaf (Split-Path -Parent $pair.ImagePath)
+      RelativePath = $relativeImagePath
+      ParamSet = $scoreRow.ParamSet
+      LabelCount = $annotationBoxes.Count
+      DetectedCount = $scoreRow.DetectedCount
+      CountDelta = $scoreRow.CountDelta
+      MatchedCount = $scoreRow.MatchedCount
+      FalsePositiveCount = $scoreRow.FalsePositiveCount
+      FalseNegativeCount = $scoreRow.FalseNegativeCount
+      Precision = $scoreRow.Precision
+      Recall = $scoreRow.Recall
+      F1 = $scoreRow.F1
+      MeanIoU = $scoreRow.MeanIoU
+    }
+  }
 
   $best = $presetScoreRows |
     Sort-Object `
@@ -563,6 +637,11 @@ foreach ($pair in $pairs) {
 
   $batchFolder = ($relativeImagePath -split '\\')[0]
   $sampleFolder = Split-Path -Leaf (Split-Path -Parent $pair.ImagePath)
+  $reviewCategory = Get-ReviewCategory `
+    -FalsePositive $best.FalsePositiveCount `
+    -FalseNegative $best.FalseNegativeCount `
+    -Matched $best.MatchedCount `
+    -LabelCount $annotationBoxes.Count
   $summary += [PSCustomObject]@{
     BatchFolder = $batchFolder
     SampleFolder = $sampleFolder
@@ -570,6 +649,7 @@ foreach ($pair in $pairs) {
     LabelCount = $annotationBoxes.Count
     BestParamSet = $best.ParamSet
     BestDetectedCount = $best.DetectedCount
+    DetectedCount = $best.DetectedCount
     BestCountDelta = $best.CountDelta
     BestCountDeltaText = $best.CountDeltaText
     MatchedCount = $best.MatchedCount
@@ -579,6 +659,7 @@ foreach ($pair in $pairs) {
     Recall = $best.Recall
     F1 = $best.F1
     MeanIoU = $best.MeanIoU
+    ReviewCategory = $reviewCategory
     RecallParamSet = $recallBest.ParamSet
     RecallDetectedCount = $recallBest.DetectedCount
     RecallMatchedCount = $recallBest.MatchedCount
@@ -603,8 +684,31 @@ $summary |
   Export-Csv -LiteralPath (Join-Path $OutputRoot "summary.csv") -NoTypeInformation -Encoding UTF8
 
 $summary |
-  Select-Object BatchFolder, SampleFolder, RelativePath, LabelCount, BestParamSet, BestDetectedCount, BestCountDeltaText, MatchedCount, FalsePositiveCount, FalseNegativeCount, Precision, Recall, F1, MeanIoU, RecallParamSet, RecallDetectedCount, RecallMatchedCount, RecallFalsePositiveCount, RecallFalseNegativeCount, RecallPrecision, RecallRecall, RecallF1, PrecisionParamSet, PrecisionDetectedCount, PrecisionMatchedCount, PrecisionFalsePositiveCount, PrecisionFalseNegativeCount, PrecisionPrecision, PrecisionRecall, PrecisionF1 |
+  Select-Object BatchFolder, SampleFolder, RelativePath, LabelCount, BestParamSet, BestDetectedCount, BestCountDeltaText, MatchedCount, FalsePositiveCount, FalseNegativeCount, Precision, Recall, F1, MeanIoU, ReviewCategory, RecallParamSet, RecallDetectedCount, RecallMatchedCount, RecallFalsePositiveCount, RecallFalseNegativeCount, RecallPrecision, RecallRecall, RecallF1, PrecisionParamSet, PrecisionDetectedCount, PrecisionMatchedCount, PrecisionFalsePositiveCount, PrecisionFalseNegativeCount, PrecisionPrecision, PrecisionRecall, PrecisionF1 |
   Export-Csv -LiteralPath (Join-Path $OutputRoot "summary_readable.csv") -NoTypeInformation -Encoding UTF8
+
+$summary |
+  Select-Object BatchFolder, SampleFolder, RelativePath, LabelCount, BestParamSet, BestDetectedCount, BestCountDeltaText, MatchedCount, FalsePositiveCount, FalseNegativeCount, Precision, Recall, F1, MeanIoU, ReviewCategory |
+  Export-Csv -LiteralPath (Join-Path $OutputRoot "review_focus.csv") -NoTypeInformation -Encoding UTF8
+
+$paramSummary = $allPresetScores |
+  Group-Object ParamSet |
+  ForEach-Object { New-ScoreSummaryItem -Name $_.Name -Rows @($_.Group) } |
+  Sort-Object `
+    @{ Expression = 'F1'; Descending = $true }, `
+    @{ Expression = 'Recall'; Descending = $true }, `
+    @{ Expression = 'FalsePositive'; Descending = $false }
+
+$paramSummary |
+  Export-Csv -LiteralPath (Join-Path $OutputRoot "param_summary.csv") -NoTypeInformation -Encoding UTF8
+
+$reviewCategorySummary = $summary |
+  Group-Object ReviewCategory |
+  ForEach-Object { New-ScoreSummaryItem -Name $_.Name -Rows @($_.Group) } |
+  Sort-Object Images -Descending
+
+$reviewCategorySummary |
+  Export-Csv -LiteralPath (Join-Path $OutputRoot "review_category_summary.csv") -NoTypeInformation -Encoding UTF8
 
 $labelSummary = $labelStats.GetEnumerator() |
   ForEach-Object {
@@ -718,7 +822,7 @@ $rows = foreach ($item in $summary) {
   $annotationPath = (Get-RelativePath -BasePath $OutputRoot -TargetPath (Join-Path $item.OutputFolder "annotation_boxes.svg")).Replace('\', '/')
   $alignmentPath = (Get-RelativePath -BasePath $OutputRoot -TargetPath (Join-Path $item.OutputFolder "best_alignment.svg")).Replace('\', '/')
   $scoresPath = (Get-RelativePath -BasePath $OutputRoot -TargetPath (Join-Path $item.OutputFolder "preset_scores.csv")).Replace('\', '/')
-  "<tr><td>$([System.Security.SecurityElement]::Escape($item.BatchFolder))</td><td>$([System.Security.SecurityElement]::Escape($item.SampleFolder))</td><td>$([System.Security.SecurityElement]::Escape($item.RelativePath))</td><td>$($item.LabelCount)</td><td>$($item.BestParamSet)</td><td>$($item.BestDetectedCount)</td><td>$($item.BestCountDeltaText)</td><td>$($item.MatchedCount)</td><td>$($item.FalsePositiveCount)</td><td>$($item.FalseNegativeCount)</td><td>$($item.Precision)</td><td>$($item.Recall)</td><td>$($item.F1)</td><td>$($item.MeanIoU)</td><td>$($item.RecallParamSet)</td><td>$($item.RecallMatchedCount)</td><td>$($item.RecallFalsePositiveCount)</td><td>$($item.RecallFalseNegativeCount)</td><td>$($item.RecallRecall)</td><td>$($item.PrecisionParamSet)</td><td>$($item.PrecisionMatchedCount)</td><td>$($item.PrecisionFalsePositiveCount)</td><td>$($item.PrecisionFalseNegativeCount)</td><td>$($item.PrecisionPrecision)</td><td><a href=""$sourcePath"">source</a></td><td><a href=""$annotationPath"">labels</a></td><td><a href=""$alignmentPath"">best alignment</a></td><td><a href=""$scoresPath"">preset scores</a></td><td><a href=""$reportPath"">probe report</a></td></tr>"
+  "<tr><td>$([System.Security.SecurityElement]::Escape($item.BatchFolder))</td><td>$([System.Security.SecurityElement]::Escape($item.SampleFolder))</td><td>$([System.Security.SecurityElement]::Escape($item.RelativePath))</td><td>$($item.LabelCount)</td><td>$($item.BestParamSet)</td><td>$($item.BestDetectedCount)</td><td>$($item.BestCountDeltaText)</td><td>$($item.MatchedCount)</td><td>$($item.FalsePositiveCount)</td><td>$($item.FalseNegativeCount)</td><td>$($item.Precision)</td><td>$($item.Recall)</td><td>$($item.F1)</td><td>$($item.MeanIoU)</td><td>$([System.Security.SecurityElement]::Escape($item.ReviewCategory))</td><td>$($item.RecallParamSet)</td><td>$($item.RecallMatchedCount)</td><td>$($item.RecallFalsePositiveCount)</td><td>$($item.RecallFalseNegativeCount)</td><td>$($item.RecallRecall)</td><td>$($item.PrecisionParamSet)</td><td>$($item.PrecisionMatchedCount)</td><td>$($item.PrecisionFalsePositiveCount)</td><td>$($item.PrecisionFalseNegativeCount)</td><td>$($item.PrecisionPrecision)</td><td><a href=""$sourcePath"">source</a></td><td><a href=""$annotationPath"">labels</a></td><td><a href=""$alignmentPath"">best alignment</a></td><td><a href=""$scoresPath"">preset scores</a></td><td><a href=""$reportPath"">probe report</a></td></tr>"
 }
 
 $scatterSvg = New-ScatterPlotSvg -Items $summary
@@ -730,6 +834,12 @@ $sizeRows = foreach ($item in $sizeSummary) {
 }
 $modeRows = foreach ($item in $modeSummary) {
   "<tr><td>$([System.Security.SecurityElement]::Escape($item.Mode))</td><td>$($item.Images)</td><td>$($item.Labels)</td><td>$($item.Matched)</td><td>$($item.FalsePositive)</td><td>$($item.FalseNegative)</td><td>$($item.Precision)</td><td>$($item.Recall)</td><td>$($item.F1)</td></tr>"
+}
+$paramRows = foreach ($item in ($paramSummary | Select-Object -First 12)) {
+  "<tr><td>$([System.Security.SecurityElement]::Escape($item.Name))</td><td>$($item.Images)</td><td>$($item.Labels)</td><td>$($item.Detections)</td><td>$($item.Matched)</td><td>$($item.FalsePositive)</td><td>$($item.FalseNegative)</td><td>$($item.Precision)</td><td>$($item.Recall)</td><td>$($item.F1)</td><td>$($item.MeanIoU)</td></tr>"
+}
+$reviewCategoryRows = foreach ($item in $reviewCategorySummary) {
+  "<tr><td>$([System.Security.SecurityElement]::Escape($item.Name))</td><td>$($item.Images)</td><td>$($item.Labels)</td><td>$($item.Detections)</td><td>$($item.Matched)</td><td>$($item.FalsePositive)</td><td>$($item.FalseNegative)</td><td>$($item.Precision)</td><td>$($item.Recall)</td><td>$($item.F1)</td></tr>"
 }
 
 $index = @"
@@ -772,7 +882,7 @@ $index = @"
 <body>
   <h1>MoonVision Bacteria Labeled Review</h1>
   <p class="note">Input root: $([System.Security.SecurityElement]::Escape($InputRoot))</p>
-  <p class="note">IoU match threshold: $minIou | Readable CSV: <a href="summary_readable.csv">summary_readable.csv</a> | Raw CSV: <a href="summary.csv">summary.csv</a> | Mode CSV: <a href="mode_summary.csv">mode_summary.csv</a> | Label CSV: <a href="label_summary.csv">label_summary.csv</a> | Size CSV: <a href="size_summary.csv">size_summary.csv</a></p>
+  <p class="note">IoU match threshold: $minIou | Readable CSV: <a href="summary_readable.csv">summary_readable.csv</a> | Review Focus CSV: <a href="review_focus.csv">review_focus.csv</a> | Parameter CSV: <a href="param_summary.csv">param_summary.csv</a> | Category CSV: <a href="review_category_summary.csv">review_category_summary.csv</a> | Raw CSV: <a href="summary.csv">summary.csv</a> | Mode CSV: <a href="mode_summary.csv">mode_summary.csv</a> | Label CSV: <a href="label_summary.csv">label_summary.csv</a> | Size CSV: <a href="size_summary.csv">size_summary.csv</a></p>
 
   <div class="cards">
     <div class="card"><div class="label">Images</div><div class="value">$imageCount</div></div>
@@ -812,6 +922,55 @@ $index = @"
     </thead>
     <tbody>
       $($modeRows -join "`n      ")
+    </tbody>
+  </table>
+
+  <div class="section">
+    <h2>Review Category Summary</h2>
+    <p class="note">This table groups the selected best result into directly actionable buckets: clean match, under-detected, over-detected, and mixed miss/noise.</p>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>Category</th>
+        <th>Images</th>
+        <th>Labels</th>
+        <th>Detections</th>
+        <th>Matched</th>
+        <th>False Positive</th>
+        <th>False Negative</th>
+        <th>Precision</th>
+        <th>Recall</th>
+        <th>F1</th>
+      </tr>
+    </thead>
+    <tbody>
+      $($reviewCategoryRows -join "`n      ")
+    </tbody>
+  </table>
+
+  <div class="section">
+    <h2>Top Parameter Sets</h2>
+    <p class="note">This aggregate ranking uses every evaluated image, not only the per-image winner. Use it to decide which probe routes are worth keeping or tuning.</p>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>Param Set</th>
+        <th>Images</th>
+        <th>Labels</th>
+        <th>Detections</th>
+        <th>Matched</th>
+        <th>False Positive</th>
+        <th>False Negative</th>
+        <th>Precision</th>
+        <th>Recall</th>
+        <th>F1</th>
+        <th>Mean IoU</th>
+      </tr>
+    </thead>
+    <tbody>
+      $($paramRows -join "`n      ")
     </tbody>
   </table>
 
@@ -887,6 +1046,7 @@ $index = @"
         <th>Recall</th>
         <th>F1</th>
         <th>Mean IoU</th>
+        <th>Review Category</th>
         <th>Recall Param Set</th>
         <th>Recall Matched</th>
         <th>Recall False Positive</th>

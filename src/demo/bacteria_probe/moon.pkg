@@ -1,0 +1,10 @@
+import {
+  "PingGuoMiaoMiao/MoonVision/components",
+  "PingGuoMiaoMiao/MoonVision/demo_support" @demoio,
+  "PingGuoMiaoMiao/MoonVision/export",
+  "PingGuoMiaoMiao/MoonVision/image",
+  "PingGuoMiaoMiao/MoonVision/morphology",
+  "PingGuoMiaoMiao/MoonVision/ops",
+}
+
+pkgtype(kind: "executable")
