@@ -17,7 +17,7 @@ pub fn cumulative_histogram(
   hist : Array[Int],
 ) -> Array[Int] raise @image.ImageError {
   if hist.length() != 256 {
-    raise @image.InvalidBufferLength(256, hist.length())
+    raise InvalidBufferLength(256, hist.length())
   }
   let out = Array::make(256, 0)
   let mut acc = 0
@@ -34,10 +34,10 @@ pub fn normalize_histogram(
   scale : Int,
 ) -> Array[Int] raise @image.ImageError {
   if hist.length() != 256 {
-    raise @image.InvalidBufferLength(256, hist.length())
+    raise InvalidBufferLength(256, hist.length())
   }
   if scale < 0 {
-    raise @image.InvalidDimensions("histogram scale must be non-negative")
+    raise InvalidDimensions("histogram scale must be non-negative")
   }
   let mut max_count = 0
   for count in hist {

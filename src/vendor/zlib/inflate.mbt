@@ -61,7 +61,7 @@ fn inflate_blocks(
       let (lit_tree, dist_tree) = build_dynamic_trees(reader)
       inflate_huffman_block(reader, output, lit_tree, dist_tree)
     } else {
-      raise ZlibError::InvalidData("Invalid deflate block type")
+      raise InvalidData("Invalid deflate block type")
     }
     if bfinal == 1 {
       is_final = true
@@ -78,7 +78,7 @@ fn inflate_stored_block(
   let len = reader.read_u16_le_aligned()
   let nlen = reader.read_u16_le_aligned()
   if (len ^ nlen) != 0xffff {
-    raise ZlibError::InvalidData("Invalid stored block length")
+    raise InvalidData("Invalid stored block length")
   }
   reader.read_bytes_aligned(output, len)
 }
@@ -100,7 +100,7 @@ fn inflate_huffman_block(
       break
     }
     if sym < 257 || sym > 285 {
-      raise ZlibError::InvalidData("Invalid length symbol: \{sym}")
+      raise InvalidData("Invalid length symbol: \{sym}")
     }
     let len_index = sym - 257
     let base_len = length_base[len_index]
@@ -109,7 +109,7 @@ fn inflate_huffman_block(
     let length = base_len + extra
     let dist_sym = dist_tree.decode(reader)
     if dist_sym < 0 || dist_sym >= dist_base.length() {
-      raise ZlibError::InvalidData("Invalid distance symbol: \{dist_sym}")
+      raise InvalidData("Invalid distance symbol: \{dist_sym}")
     }
     let base_dist = dist_base[dist_sym]
     let dist_extra_bits = dist_extra[dist_sym]
@@ -120,7 +120,7 @@ fn inflate_huffman_block(
     }
     let distance = base_dist + dist_extra_val
     if distance <= 0 || distance > output.length() {
-      raise ZlibError::InvalidData("Invalid distance")
+      raise InvalidData("Invalid distance")
     }
     let start = output.length() - distance
     let mut remaining = length
@@ -202,7 +202,7 @@ fn build_dynamic_trees(
       }
       prev = 0
     } else {
-      raise ZlibError::InvalidData("Invalid code length symbol")
+      raise InvalidData("Invalid code length symbol")
     }
   }
   let lit_lengths : Array[Int] = []

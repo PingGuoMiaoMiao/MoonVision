@@ -1,7 +1,7 @@
 ///|
 fn validate_median_radius(radius : Int) -> Unit raise @image.ImageError {
   if radius < 0 {
-    raise @image.InvalidDimensions("median blur radius must not be negative")
+    raise InvalidDimensions("median blur radius must not be negative")
   }
 }
 

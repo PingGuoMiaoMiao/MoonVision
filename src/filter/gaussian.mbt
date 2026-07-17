@@ -12,7 +12,7 @@ fn gaussian_kernel_for_radius(
   radius : Int,
 ) -> IntKernel raise @image.ImageError {
   if radius < 0 {
-    raise @image.InvalidDimensions("gaussian blur radius must not be negative")
+    raise InvalidDimensions("gaussian blur radius must not be negative")
   }
   let order = radius * 2
   let row = binomial_row(order)

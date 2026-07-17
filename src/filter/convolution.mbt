@@ -41,16 +41,16 @@ fn validate_kernel_shape(
   actual_len : Int,
 ) -> Unit raise @image.ImageError {
   if width <= 0 || height <= 0 {
-    raise @image.InvalidDimensions(
+    raise InvalidDimensions(
       "kernel width and height must both be greater than zero",
     )
   }
   if width % 2 == 0 || height % 2 == 0 {
-    raise @image.InvalidDimensions("kernel width and height must both be odd")
+    raise InvalidDimensions("kernel width and height must both be odd")
   }
   let expected = kernel_area(width, height)
   if actual_len != expected {
-    raise @image.InvalidBufferLength(expected, actual_len)
+    raise InvalidBufferLength(expected, actual_len)
   }
 }
 
@@ -64,7 +64,7 @@ pub fn int_kernel(
 ) -> IntKernel raise @image.ImageError {
   validate_kernel_shape(width, height, values.length())
   if divisor == 0 {
-    raise @image.InvalidDimensions("kernel divisor must not be zero")
+    raise InvalidDimensions("kernel divisor must not be zero")
   }
   { width, height, data: values, divisor, bias }
 }

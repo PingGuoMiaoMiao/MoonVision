@@ -72,6 +72,7 @@ Check the project:
 
 ```powershell
 moon check -d
+moon check --warn-list +73
 moon build
 moon test
 ```
@@ -321,8 +322,12 @@ Use `mode_summary.csv` for the shortest top-level comparison, `review_focus.csv`
 Run the core checks:
 
 ```powershell
-moon check
+moon check -d
+moon check --warn-list +73
+moon build
 moon test
+moon fmt --check
+moon info
 ```
 
 Run the bundled visual demos:

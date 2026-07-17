@@ -1,12 +1,12 @@
 ///|
 fn validate_block_size(block_size : Int) -> Unit raise @image.ImageError {
   if block_size <= 1 {
-    raise @image.InvalidDimensions(
+    raise InvalidDimensions(
       "adaptive threshold block size must be greater than one",
     )
   }
   if block_size % 2 == 0 {
-    raise @image.InvalidDimensions("adaptive threshold block size must be odd")
+    raise InvalidDimensions("adaptive threshold block size must be odd")
   }
 }
 

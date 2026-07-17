@@ -77,7 +77,7 @@ fn orthogonal_directions() -> Array[Point] {
 ///|
 fn validate_connectivity(connectivity : Int) -> Unit raise @image.ImageError {
   if connectivity != 4 && connectivity != 8 {
-    raise @image.InvalidDimensions("contour connectivity must be either 4 or 8")
+    raise InvalidDimensions("contour connectivity must be either 4 or 8")
   }
 }
 

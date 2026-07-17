@@ -30,14 +30,14 @@ pub(all) enum StructuringElement {
 ///|
 fn validate_radius(radius : Int) -> Unit raise @image.ImageError {
   if radius < 0 {
-    raise @image.InvalidDimensions("morphology radius must not be negative")
+    raise InvalidDimensions("morphology radius must not be negative")
   }
 }
 
 ///|
 fn validate_iterations(iterations : Int) -> Unit raise @image.ImageError {
   if iterations < 0 {
-    raise @image.InvalidDimensions("morphology iterations must not be negative")
+    raise InvalidDimensions("morphology iterations must not be negative")
   }
 }
 

@@ -49,7 +49,7 @@ fn sobel_pair_at(
 ///|
 fn validate_edge_threshold(threshold : Int) -> Unit raise @image.ImageError {
   if threshold < 0 || threshold > 255 {
-    raise @image.InvalidDimensions("edge threshold must be in the range 0..255")
+    raise InvalidDimensions("edge threshold must be in the range 0..255")
   }
 }
 

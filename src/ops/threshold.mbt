@@ -1,7 +1,7 @@
 ///|
 fn ensure_threshold_in_range(threshold : Int) -> Unit raise @image.ImageError {
   if threshold < 0 || threshold > 255 {
-    raise @image.InvalidDimensions("threshold must be in the range 0..255")
+    raise InvalidDimensions("threshold must be in the range 0..255")
   }
 }
 

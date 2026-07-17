@@ -59,10 +59,10 @@ pub fn hough_lines(
   max_lines? : Int = 16,
 ) -> Array[HoughLine] raise @image.ImageError {
   if vote_threshold < 0 {
-    raise @image.InvalidDimensions("hough vote_threshold must not be negative")
+    raise InvalidDimensions("hough vote_threshold must not be negative")
   }
   if max_lines < 0 {
-    raise @image.InvalidDimensions("hough max_lines must not be negative")
+    raise InvalidDimensions("hough max_lines must not be negative")
   }
   if max_lines == 0 {
     return []

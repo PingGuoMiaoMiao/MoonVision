@@ -9,17 +9,13 @@ fn validate_canny_thresholds(
   high_threshold : Int,
 ) -> Unit raise @image.ImageError {
   if low_threshold < 0 || low_threshold > 255 {
-    raise @image.InvalidDimensions(
-      "canny low_threshold must be in the range 0..255",
-    )
+    raise InvalidDimensions("canny low_threshold must be in the range 0..255")
   }
   if high_threshold < 0 || high_threshold > 255 {
-    raise @image.InvalidDimensions(
-      "canny high_threshold must be in the range 0..255",
-    )
+    raise InvalidDimensions("canny high_threshold must be in the range 0..255")
   }
   if low_threshold >= high_threshold {
-    raise @image.InvalidDimensions(
+    raise InvalidDimensions(
       "canny low_threshold must be less than high_threshold",
     )
   }
