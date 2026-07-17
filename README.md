@@ -42,19 +42,49 @@ src/
 
 ## Quick Start
 
+Install or update the MoonBit toolchain first:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -Command "irm https://cli.moonbitlang.com/install/powershell.ps1 | iex"
+moon version
+```
+
+Install MoonVision in another MoonBit project:
+
+```powershell
+moon add PingGuoMiaoMiao/MoonVision
+```
+
+Import the packages you need from your package's `moon.pkg`:
+
+```moonbit
+import {
+  "PingGuoMiaoMiao/MoonVision/image",
+  "PingGuoMiaoMiao/MoonVision/ops",
+  "PingGuoMiaoMiao/MoonVision/filter",
+  "PingGuoMiaoMiao/MoonVision/edge",
+  "PingGuoMiaoMiao/MoonVision/components",
+  "PingGuoMiaoMiao/MoonVision/export",
+}
+```
+
 Check the project:
 
 ```powershell
-moon check
-```
-
-Run tests:
-
-```powershell
+moon check -d
+moon build
 moon test
 ```
 
-At the time of writing, the repository test suite passes on the repository default target.
+Run the bundled demos:
+
+```powershell
+moon run src/demo/object_counting
+moon run src/demo/edge_detection
+moon run src/demo/document_enhancement
+```
+
+At the time of writing, the repository has been verified with `moon 0.1.20260713`.
 
 ## Basic Usage
 
@@ -341,6 +371,7 @@ Current tests cover:
 
 - The project intentionally focuses on the algorithm layer. It does not provide GUI features, video processing, OpenCV bindings, or machine learning integration.
 - PNG decode and export are implemented locally from vendored subsets adapted from `mizchi/image` and `mizchi/zlib`, because the current upstream registry dependency graph is not compatible with the local MoonBit toolchain used for this repository.
+- Third-party vendored attribution and Apache-2.0 license notices are documented in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 ## License
 

@@ -1,8 +1,0 @@
-{
-  "import": [
-    {
-      "path": "PingGuoMiaoMiao/MoonVision/vendor/zlib",
-      "alias": "zlib"
-    }
-  ]
-}

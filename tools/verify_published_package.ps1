@@ -11,60 +11,34 @@ $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
 
 New-Item -ItemType Directory -Path $main | Out-Null
 
-[System.IO.File]::WriteAllText((Join-Path $root "moon.mod.json"), @"
-{
-  "name": "PingGuoMiaoMiao/MoonVisionSmoke",
-  "version": "0.1.0",
-  "source": "src"
-}
+[System.IO.File]::WriteAllText((Join-Path $root "moon.mod"), @"
+name = "PingGuoMiaoMiao/MoonVisionSmoke"
+
+version = "0.1.0"
+
+source = "src"
 "@, $utf8NoBom)
 
 Push-Location $root
 try {
   moon add $PackageName
 
-[System.IO.File]::WriteAllText((Join-Path $main "moon.pkg.json"), @"
-{
-  "is-main": true,
-  "import": [
-    {
-      "path": "PingGuoMiaoMiao/MoonVision/image",
-      "alias": "image"
-    },
-    {
-      "path": "PingGuoMiaoMiao/MoonVision/ops",
-      "alias": "ops"
-    },
-    {
-      "path": "PingGuoMiaoMiao/MoonVision/filter",
-      "alias": "filter"
-    },
-    {
-      "path": "PingGuoMiaoMiao/MoonVision/edge",
-      "alias": "edge"
-    },
-    {
-      "path": "PingGuoMiaoMiao/MoonVision/morphology",
-      "alias": "morphology"
-    },
-    {
-      "path": "PingGuoMiaoMiao/MoonVision/components",
-      "alias": "components"
-    },
-    {
-      "path": "PingGuoMiaoMiao/MoonVision/histogram",
-      "alias": "histogram"
-    },
-    {
-      "path": "PingGuoMiaoMiao/MoonVision/match",
-      "alias": "match"
-    },
-    {
-      "path": "PingGuoMiaoMiao/MoonVision/export",
-      "alias": "export"
-    }
-  ]
+[System.IO.File]::WriteAllText((Join-Path $main "moon.pkg"), @"
+import {
+  "PingGuoMiaoMiao/MoonVision/image",
+  "PingGuoMiaoMiao/MoonVision/ops",
+  "PingGuoMiaoMiao/MoonVision/filter",
+  "PingGuoMiaoMiao/MoonVision/edge",
+  "PingGuoMiaoMiao/MoonVision/morphology",
+  "PingGuoMiaoMiao/MoonVision/components",
+  "PingGuoMiaoMiao/MoonVision/histogram",
+  "PingGuoMiaoMiao/MoonVision/match",
+  "PingGuoMiaoMiao/MoonVision/export",
 }
+
+options(
+  "is-main": true,
+)
 "@, $utf8NoBom)
 
 [System.IO.File]::WriteAllText((Join-Path $main "main.mbt"), @'

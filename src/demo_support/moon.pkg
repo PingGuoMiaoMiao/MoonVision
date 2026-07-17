@@ -1,0 +1,8 @@
+options(
+  "native-stub": [ "io_native.c" ],
+  targets: {
+    "io_js.mbt": [ "js" ],
+    "io_native.mbt": [ "native", "llvm" ],
+    "io_wasm.mbt": [ "wasm", "wasm-gc" ],
+  },
+)
