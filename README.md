@@ -2,6 +2,103 @@
 
 MoonVision is a MoonBit-native lightweight image processing and basic computer vision library.
 
+## Install And Verify
+
+Follow these steps from a clean Windows PowerShell terminal.
+
+1. Install or update MoonBit:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -Command "irm https://cli.moonbitlang.com/install/powershell.ps1 | iex"
+moon version
+```
+
+This repository has been verified with:
+
+```text
+moon 0.1.20260803 (c19f78e 2026-08-03)
+```
+
+2. Use MoonVision from a new MoonBit project:
+
+```powershell
+cd $env:USERPROFILE\Desktop
+moon new MoonVisionExternalCheck --user LocalCheck --name MoonVisionExternalCheck
+cd MoonVisionExternalCheck
+moon add PingGuoMiaoMiao/MoonVision@0.2.4
+```
+
+3. Import MoonVision packages in `cmd/main/moon.pkg`:
+
+```moonbit
+import {
+  "PingGuoMiaoMiao/MoonVision/image",
+  "PingGuoMiaoMiao/MoonVision/ops",
+  "PingGuoMiaoMiao/MoonVision/filter",
+  "PingGuoMiaoMiao/MoonVision/edge",
+  "PingGuoMiaoMiao/MoonVision/components",
+  "PingGuoMiaoMiao/MoonVision/export",
+}
+
+pkgtype(kind: "executable")
+```
+
+4. Replace `cmd/main/main.mbt` with this minimal image-processing chain:
+
+```moonbit
+fn main {
+  let gray = try! @image.gray_from_array(
+    4,
+    4,
+    [
+      b'\x00', b'\x00', b'\xff', b'\xff',
+      b'\x00', b'\x40', b'\xc0', b'\xff',
+      b'\x00', b'\x40', b'\xc0', b'\xff',
+      b'\x00', b'\x00', b'\xff', b'\xff',
+    ],
+  )
+  let binary = try! @ops.threshold(gray, 100)
+  let blurred = try! @filter.gaussian_blur(gray, radius=1)
+  let canny = try! @edge.canny_edges(blurred, 32, 96)
+  let components = try! @components.connected_components(binary, min_area=1)
+  let png = @export.encode_gray_png(canny)
+  println(
+    "external-ok width=\{gray.width()}, height=\{gray.height()}, components=\{components.length()}, png_bytes=\{png.length()}"
+  )
+}
+```
+
+5. Check and run the external project:
+
+```powershell
+moon check
+moon build
+moon run cmd/main
+```
+
+Expected run output:
+
+```text
+external-ok width=4, height=4, components=1, png_bytes=80
+```
+
+6. Verify this repository itself:
+
+```powershell
+cd $env:USERPROFILE\Desktop\MoonVision
+moon check -d
+moon check --warn-list +73
+moon build
+moon test
+moon fmt --check
+moon info
+moon run src/demo/object_counting
+moon run src/demo/edge_detection
+moon run src/demo/document_enhancement
+```
+
+`moon test` should report `Total tests: 86, passed: 86, failed: 0.` The three demo commands write their output files under `examples/output/`.
+
 The current `v2.0` line includes the core lightweight image-processing library:
 
 - flat image containers: `GrayImage`, `RgbImage`
@@ -39,53 +136,6 @@ src/
   demo_support/    demo-only file writing helpers
   demo/            runnable demo packages
 ```
-
-## Quick Start
-
-Install or update the MoonBit toolchain first:
-
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -Command "irm https://cli.moonbitlang.com/install/powershell.ps1 | iex"
-moon version
-```
-
-Install MoonVision in another MoonBit project:
-
-```powershell
-moon add PingGuoMiaoMiao/MoonVision
-```
-
-Import the packages you need from your package's `moon.pkg`:
-
-```moonbit
-import {
-  "PingGuoMiaoMiao/MoonVision/image",
-  "PingGuoMiaoMiao/MoonVision/ops",
-  "PingGuoMiaoMiao/MoonVision/filter",
-  "PingGuoMiaoMiao/MoonVision/edge",
-  "PingGuoMiaoMiao/MoonVision/components",
-  "PingGuoMiaoMiao/MoonVision/export",
-}
-```
-
-Check the project:
-
-```powershell
-moon check -d
-moon check --warn-list +73
-moon build
-moon test
-```
-
-Run the bundled demos:
-
-```powershell
-moon run src/demo/object_counting
-moon run src/demo/edge_detection
-moon run src/demo/document_enhancement
-```
-
-At the time of writing, the repository has been verified with `moon 0.1.20260713`.
 
 ## Basic Usage
 
