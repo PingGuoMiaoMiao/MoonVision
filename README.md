@@ -82,6 +82,9 @@ Expected run output:
 external-ok width=4, height=4, components=1, png_bytes=80
 ```
 
+A complete external verification repository is available at
+<https://github.com/PingGuoMiaoMiao/MoonVisionExternalCheck>.
+
 6. Verify this repository itself:
 
 ```powershell
