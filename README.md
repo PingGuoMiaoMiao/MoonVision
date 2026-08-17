@@ -2,6 +2,100 @@
 
 MoonVision is a MoonBit-native lightweight image processing and basic computer vision library.
 
+## 中文安装与验收
+
+请在 Windows PowerShell 里从零按下面步骤验证。MoonVision 已在 `moon 0.1.20260803 (c19f78e 2026-08-03)` 下验证通过。
+
+1. 安装或更新 MoonBit 工具链：
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -Command "irm https://cli.moonbitlang.com/install/powershell.ps1 | iex"
+moon version
+```
+
+2. 新建一个独立项目并安装 MoonVision：
+
+```powershell
+cd $env:USERPROFILE\Desktop
+moon new MoonVisionExternalCheck --user LocalCheck --name MoonVisionExternalCheck
+cd MoonVisionExternalCheck
+moon add PingGuoMiaoMiao/MoonVision@0.2.5
+```
+
+3. 在 `cmd/main/moon.pkg` 中导入 MoonVision 包：
+
+```moonbit
+import {
+  "PingGuoMiaoMiao/MoonVision/image",
+  "PingGuoMiaoMiao/MoonVision/ops",
+  "PingGuoMiaoMiao/MoonVision/filter",
+  "PingGuoMiaoMiao/MoonVision/edge",
+  "PingGuoMiaoMiao/MoonVision/components",
+  "PingGuoMiaoMiao/MoonVision/export",
+}
+
+pkgtype(kind: "executable")
+```
+
+4. 将 `cmd/main/main.mbt` 替换为最小图像处理链：
+
+```moonbit
+fn main {
+  let gray = try! @image.gray_from_array(
+    4,
+    4,
+    [
+      b'\x00', b'\x00', b'\xff', b'\xff',
+      b'\x00', b'\x40', b'\xc0', b'\xff',
+      b'\x00', b'\x40', b'\xc0', b'\xff',
+      b'\x00', b'\x00', b'\xff', b'\xff',
+    ],
+  )
+  let binary = try! @ops.threshold(gray, 100)
+  let blurred = try! @filter.gaussian_blur(gray, radius=1)
+  let canny = try! @edge.canny_edges(blurred, 32, 96)
+  let components = try! @components.connected_components(binary, min_area=1)
+  let png = @export.encode_gray_png(canny)
+  println(
+    "external-ok width=\{gray.width()}, height=\{gray.height()}, components=\{components.length()}, png_bytes=\{png.length()}"
+  )
+}
+```
+
+5. 在独立项目中检查并运行：
+
+```powershell
+moon check
+moon build
+moon run cmd/main
+```
+
+期望输出：
+
+```text
+external-ok width=4, height=4, components=1, png_bytes=80
+```
+
+完整的独立验证仓库：
+<https://github.com/PingGuoMiaoMiao/MoonVisionExternalCheck>
+
+6. 验证 MoonVision 仓库本身：
+
+```powershell
+cd $env:USERPROFILE\Desktop\MoonVision
+moon check -d
+moon check --warn-list +73
+moon build
+moon test
+moon fmt --check
+moon info
+moon run src/demo/object_counting
+moon run src/demo/edge_detection
+moon run src/demo/document_enhancement
+```
+
+`moon test` 应输出 `Total tests: 86, passed: 86, failed: 0.` 三个示例会把结果写入 `examples/output/`。
+
 ## Install And Verify
 
 Follow these steps from a clean Windows PowerShell terminal.
@@ -25,7 +119,7 @@ moon 0.1.20260803 (c19f78e 2026-08-03)
 cd $env:USERPROFILE\Desktop
 moon new MoonVisionExternalCheck --user LocalCheck --name MoonVisionExternalCheck
 cd MoonVisionExternalCheck
-moon add PingGuoMiaoMiao/MoonVision@0.2.4
+moon add PingGuoMiaoMiao/MoonVision@0.2.5
 ```
 
 3. Import MoonVision packages in `cmd/main/moon.pkg`:
